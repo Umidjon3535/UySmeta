@@ -1,4 +1,53 @@
-# UySmeta'ni serverga joylash (Oracle Cloud Free — bepul)
+# UySmeta'ni serverga joylash
+
+Ikki bepul yo'l:
+- **A. PythonAnywhere** — bank kartasi **shart emas**. 15 daqiqada tayyor. Pastda.
+- **B. Oracle Cloud Free** — kuchliroq haqiqiy server, lekin ro'yxatdan o'tishda karta so'raladi. Keyingi bo'lim.
+
+---
+
+## A. PythonAnywhere (kartasiz)
+
+Manzil: `https://<login>.pythonanywhere.com` (HTTPS bilan). Baza va rasmlar saqlanadi, sayt uxlamaydi.
+
+**Bepul tarif cheklovlari** (sayt ishlashiga xalaqit bermaydi):
+- Disk 512 MB — rasmlar ko'payib ketsa, keyin pullik tarifga yoki Oracle'ga o'tasiz.
+- Tashqi internet faqat ruxsat etilgan saytlarga: Telegram, Anthropic, Cloudflare — bor.
+- Fon vazifalari so'rov ichida bajariladi (`BACKGROUND_SYNC=true`) — AI tahlil paytida sahifa biroz kutadi.
+- **Har 3 oyda** Web bo'limida **«Run until 3 months from today»** tugmasini bosing (aks holda sayt to'xtaydi; oldindan email keladi).
+- O'z domeningiz (.uz) faqat pullik tarifda ulanadi.
+
+### 1. Hisob ochish
+https://www.pythonanywhere.com/registration/register/beginner/ → login, email, parol. Login sayt manzili bo'ladi
+(masalan `uysmeta` → `uysmeta.pythonanywhere.com`). Emailni tasdiqlang.
+
+### 2. API token
+Yuqori o'ng **Account → API token → Create a new API token**. (Skript shu bilan veb-ilovani o'zi sozlaydi.)
+
+### 3. O'rnatish (bitta buyruq)
+**Consoles → Bash** (yangi konsol oching) va kiriting:
+
+```bash
+git clone https://github.com/Umidjon3535/UySmeta.git && cd UySmeta && bash deploy/pythonanywhere.sh
+```
+
+Skript administrator telefoni, paroli va Telegram bot tokenini so'raydi; qolganini (kutubxonalar, baza, maxfiy kalitlar,
+veb-ilova, HTTPS) o'zi qiladi — 5–8 daqiqa. Oxirida sayt manzilini ko'rsatadi.
+
+### 4. Ishga tushgandan keyin
+1. Saytni oching → **Kirish** → administrator telefoni va paroli.
+2. **Admin panel → Tizim holati → «Botni saytga ulash»** (kompyuterda `bot_dev` ishlayotgan bo'lsa — to'xtating).
+3. Telegram'da bir marta **«Telegram orqali kirish»** bilan admin raqamingizdan kiring — xabarlar Telegram'ga keladi.
+
+### Yangilash (kompyuterdan `git push` qilgach)
+Bash konsolda: `cd ~/UySmeta && git pull && bash deploy/pythonanywhere.sh`
+
+### Muammo bo'lsa
+**Web** bo'limi → *Log files* → **Error log** — oxirgi qatorlarni ko'ring.
+
+---
+
+# B. Oracle Cloud Free (kartali, kuchliroq server)
 
 Natija: sayt `https://...` manzilida 24/7 ishlaydi, baza va yuklangan rasmlar saqlanadi, Telegram bot ulanadi.
 Hammasi bepul (Oracle "Always Free"). Taxminiy vaqt: 30–40 daqiqa.

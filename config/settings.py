@@ -129,6 +129,8 @@ ADMIN_PHONE = env("ADMIN_PHONE")
 ADMIN_PASSWORD = env("ADMIN_PASSWORD")
 SEED_DEMO_DATA = env_bool("SEED_DEMO_DATA", True)
 OTP_SECRET = env("OTP_SECRET") or "uysmeta"
+# Fon vazifalari (Telegram xabarlari, AI tahlil) alohida oqimda; oqim taqiqlangan hostingda true (PythonAnywhere bepul)
+BACKGROUND_SYNC = env_bool("BACKGROUND_SYNC", False)
 
 # Ichki hamyon (to'lov tizimisiz, bepul format)
 WALLET_SIGNUP_BONUS = int(env("WALLET_SIGNUP_BONUS") or 300_000)  # ro'yxatdan o'tganda beriladi
