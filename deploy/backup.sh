@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Zaxira nusxa: baza (SQLite) va yuklangan rasmlar/hujjatlar → ~/uysmeta-backups/uysmeta-YYYY-MM-DD.tar.gz
-# Ishlatish:  bash deploy/backup.sh      (har kuni: crontab -e → 0 3 * * * bash ~/uysmeta/deploy/backup.sh)
+# Ishlatish:  bash deploy/backup.sh      (har kuni: crontab -e → 0 3 * * * bash ~/UySmeta/deploy/backup.sh)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 DOCKER="docker"

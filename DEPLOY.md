@@ -42,8 +42,8 @@ ssh -i C:\Users\Hp\Downloads\ssh-key.key ubuntu@<PUBLIC_IP>
 Serverda:
 
 ```bash
-git clone https://github.com/<GITHUB_LOGIN>/uysmeta.git
-cd uysmeta
+git clone https://github.com/Umidjon3535/UySmeta.git
+cd UySmeta
 bash deploy/setup.sh
 ```
 
@@ -69,12 +69,12 @@ Maxfiy kalitlar (`DJANGO_SECRET_KEY`, `OTP_SECRET`) avtomatik yaratiladi. Sayt *
 
 ## Kundalik ishlar
 
-| Vazifa | Buyruq (serverda, `~/uysmeta` ichida) |
+| Vazifa | Buyruq (serverda, `~/UySmeta` ichida) |
 |---|---|
 | Yangi kodni joylash (kompyuterdan `git push` qilgach) | `bash deploy/update.sh` |
 | Loglarni ko'rish | `docker compose -f docker-compose.prod.yml logs -f uysmeta` |
 | Zaxira nusxa (baza + rasmlar) | `bash deploy/backup.sh` |
-| Har kuni avtomatik zaxira | `crontab -e` → `0 3 * * * bash ~/uysmeta/deploy/backup.sh` |
+| Har kuni avtomatik zaxira | `crontab -e` → `0 3 * * * bash ~/UySmeta/deploy/backup.sh` |
 | Sozlamani o'zgartirish | `nano .env` → `docker compose -f docker-compose.prod.yml up -d` |
 | Qayta ishga tushirish | `docker compose -f docker-compose.prod.yml restart` |
 
