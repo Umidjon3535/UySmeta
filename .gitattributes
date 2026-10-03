@@ -1,0 +1,6 @@
+# Serverda (Linux) ishlaydigan fayllar — doim LF (Windows CRLF bash/Docker'ni buzadi)
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+deploy/Caddyfile text eol=lf
+deploy/env.production.example text eol=lf

@@ -2,6 +2,7 @@
 
 import secrets
 
+from django.conf import settings
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
@@ -172,7 +173,7 @@ def telegram_login_view(request):
 
 
 def _bind_tg_cookie(response, token: str) -> None:
-    response.set_cookie(TG_COOKIE, token, max_age=int(tg_login.LOGIN_TTL.total_seconds()), httponly=True, samesite="Lax")
+    response.set_cookie(TG_COOKIE, token, max_age=int(tg_login.LOGIN_TTL.total_seconds()), httponly=True, samesite="Lax", secure=settings.SITE_URL.startswith("https://") and not settings.DEBUG)
 
 
 def _tg_session(request, token: str):

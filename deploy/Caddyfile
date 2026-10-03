@@ -1,0 +1,10 @@
+# HTTPS (Let's Encrypt sertifikati avtomatik olinadi va yangilanadi).
+# DOMAIN — .env dagi qiymat: masalan uysmeta.duckdns.org yoki 141-147-10-20.sslip.io
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy uysmeta:8000
+	# Yuklanadigan fayllar: hujjat 10 MB gacha
+	request_body {
+		max_size 12MB
+	}
+}

@@ -1,0 +1,37 @@
+# Haqiqiy server (Oracle Cloud Free VM va boshqalar): sayt + Caddy (HTTPS).
+# Ishga tushirish:  docker compose -f docker-compose.prod.yml up -d --build
+# Batafsil: DEPLOY.md
+services:
+  uysmeta:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # HTTPS'ni Caddy bajaradi, sayt uning ortida
+      BEHIND_PROXY: "true"
+      WEB_CONCURRENCY: "${WEB_CONCURRENCY:-3}"
+    volumes:
+      - uysmeta-data:/app/data   # SQLite baza, rasmlar, hujjatlar — qayta joylashda o'chmaydi
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - uysmeta
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: "${DOMAIN:?.env faylida DOMAIN yozilmagan}"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  uysmeta-data:
+  caddy-data:
+  caddy-config:

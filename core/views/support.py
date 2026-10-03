@@ -3,6 +3,7 @@
 import json
 import secrets
 
+from django.conf import settings
 from django.http import JsonResponse
 
 from ..auth import check_rate_limit, client_ip
@@ -63,7 +64,7 @@ def support_api(request):
         add_client_message(thread, text)
         run_after(notify_new_message, thread.id, text, first)
         response = JsonResponse({"ok": True, "messages": thread_messages(thread)})
-        response.set_cookie(COOKIE, thread.key, max_age=COOKIE_AGE, httponly=True, samesite="Lax")
+        response.set_cookie(COOKIE, thread.key, max_age=COOKIE_AGE, httponly=True, samesite="Lax", secure=settings.SITE_URL.startswith("https://") and not settings.DEBUG)
         return response
 
     if not thread:
