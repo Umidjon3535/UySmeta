@@ -16,6 +16,7 @@ DOMAIN="${USERNAME}.${PA_HOST}"
 [ "$PA_HOST" = "pythonanywhere.com" ] && API_HOST="www.pythonanywhere.com" || API_HOST="$PA_HOST"
 API="https://${API_HOST}/api/v0/user/${USERNAME}"
 VENV="$HOME/.virtualenvs/uysmeta"
+WSGI="/var/www/${DOMAIN//./_}_wsgi.py"
 
 # 1. Python (eng yangisi) va virtual muhit
 PY=""
@@ -55,8 +56,29 @@ say "Baza (migrate + boshlang'ich ma'lumotlar) va static fayllar"
 "$VENV/bin/python" manage.py migrate --noinput
 "$VENV/bin/python" manage.py collectstatic --noinput -v 0
 
-# 4. WSGI fayli (PythonAnywhere shu faylni ishga tushiradi)
-WSGI="/var/www/${DOMAIN//./_}_wsgi.py"
+# 4. Veb-ilova (API orqali): yaratish, virtualenv, static, HTTPS
+if [ -n "${API_TOKEN:-}" ]; then
+  say "Veb-ilova sozlanmoqda: https://${DOMAIN}"
+  auth=(-H "Authorization: Token ${API_TOKEN}")
+  curl -fsS "${auth[@]}" "$API/webapps/${DOMAIN}/" >/dev/null 2>&1 || \
+    curl -fsS "${auth[@]}" -X POST "$API/webapps/" -d "domain_name=${DOMAIN}" -d "python_version=python${PYV//./}" >/dev/null
+  curl -fsS "${auth[@]}" -X PATCH "$API/webapps/${DOMAIN}/" \
+    -d "virtualenv_path=${VENV}" -d "source_directory=${APP_DIR}" -d "force_https=true" >/dev/null
+  # /static/ — PythonAnywhere o'zi beradi (tezroq)
+  if ! curl -fsS "${auth[@]}" "$API/webapps/${DOMAIN}/static_files/" | grep -q '"/static/"'; then
+    curl -fsS "${auth[@]}" -X POST "$API/webapps/${DOMAIN}/static_files/" -d "url=/static/" -d "path=${APP_DIR}/staticfiles" >/dev/null
+  fi
+else
+  say "API_TOKEN topilmadi — Web bo'limida qo'lda sozlang (DEPLOY.md, PythonAnywhere qismi):"
+  echo "  Add a new web app → Manual configuration → Python ${PYV}"
+  echo "  Virtualenv: ${VENV}"
+  echo "  Static files: URL /static/  →  ${APP_DIR}/staticfiles"
+  echo "  Force HTTPS: Enabled  →  Reload"
+  echo "  (WSGI fayli tayyor: ${WSGI})"
+fi
+
+# 5. WSGI fayli (PythonAnywhere shu faylni ishga tushiradi). Veb-ilova yaratilgandan KEYIN —
+# API yangi veb-ilovaga standart WSGI faylini yozadi va bizniki o'chib ketadi
 cat > "$WSGI" <<EOF
 # UySmeta — deploy/pythonanywhere.sh yaratgan
 import os
@@ -71,26 +93,9 @@ from django.core.wsgi import get_wsgi_application  # noqa: E402
 application = get_wsgi_application()
 EOF
 
-# 5. Veb-ilova (API orqali): yaratish, virtualenv, static, HTTPS, qayta yuklash
+# 6. Qayta yuklash
 if [ -n "${API_TOKEN:-}" ]; then
-  say "Veb-ilova sozlanmoqda: https://${DOMAIN}"
-  auth=(-H "Authorization: Token ${API_TOKEN}")
-  curl -fsS "${auth[@]}" "$API/webapps/${DOMAIN}/" >/dev/null 2>&1 || \
-    curl -fsS "${auth[@]}" -X POST "$API/webapps/" -d "domain_name=${DOMAIN}" -d "python_version=python${PYV//./}" >/dev/null
-  curl -fsS "${auth[@]}" -X PATCH "$API/webapps/${DOMAIN}/" \
-    -d "virtualenv_path=${VENV}" -d "source_directory=${APP_DIR}" -d "force_https=true" >/dev/null
-  # /static/ — PythonAnywhere o'zi beradi (tezroq)
-  if ! curl -fsS "${auth[@]}" "$API/webapps/${DOMAIN}/static_files/" | grep -q '"/static/"'; then
-    curl -fsS "${auth[@]}" -X POST "$API/webapps/${DOMAIN}/static_files/" -d "url=/static/" -d "path=${APP_DIR}/staticfiles" >/dev/null
-  fi
-  curl -fsS "${auth[@]}" -X POST "$API/webapps/${DOMAIN}/reload/" >/dev/null
+  curl -fsS -H "Authorization: Token ${API_TOKEN}" -X POST "$API/webapps/${DOMAIN}/reload/" >/dev/null
   say "Tayyor! Sayt: https://${DOMAIN}"
-else
-  say "API_TOKEN topilmadi — Web bo'limida qo'lda sozlang (DEPLOY.md, PythonAnywhere qismi):"
-  echo "  Add a new web app → Manual configuration → Python ${PYV}"
-  echo "  Virtualenv: ${VENV}"
-  echo "  Static files: URL /static/  →  ${APP_DIR}/staticfiles"
-  echo "  Force HTTPS: Enabled  →  Reload"
-  echo "  (WSGI fayli tayyor: ${WSGI})"
 fi
 echo "Keyingi qadam: saytga admin bo'lib kiring → Admin panel → Tizim holati → «Botni saytga ulash»."
