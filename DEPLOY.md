@@ -14,7 +14,7 @@ Manzil: `https://<login>.pythonanywhere.com` (HTTPS bilan). Baza va rasmlar saql
 - Disk 512 MB — rasmlar ko'payib ketsa, keyin pullik tarifga yoki Oracle'ga o'tasiz.
 - Tashqi internet faqat ruxsat etilgan saytlarga: Telegram, Anthropic, Cloudflare — bor.
 - Fon vazifalari so'rov ichida bajariladi (`BACKGROUND_SYNC=true`) — AI tahlil paytida sahifa biroz kutadi.
-- **Har 3 oyda** Web bo'limida **«Run until 3 months from today»** tugmasini bosing (aks holda sayt to'xtaydi; oldindan email keladi).
+- **Har oy** Web bo'limida **«Run until … from today»** tugmasini bosing (aks holda sayt to'xtaydi; oldindan email keladi).
 - O'z domeningiz (.uz) faqat pullik tarifda ulanadi.
 
 ### 1. Hisob ochish

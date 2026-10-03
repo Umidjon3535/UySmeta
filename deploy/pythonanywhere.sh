@@ -95,6 +95,8 @@ EOF
 
 # 6. Qayta yuklash
 if [ -n "${API_TOKEN:-}" ]; then
+  # WSGI fayli diskka yozilib ulgurishi uchun biroz kutiladi (aks holda eski fayl yuklanishi mumkin)
+  sleep 5
   curl -fsS -H "Authorization: Token ${API_TOKEN}" -X POST "$API/webapps/${DOMAIN}/reload/" >/dev/null
   say "Tayyor! Sayt: https://${DOMAIN}"
 fi
