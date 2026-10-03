@@ -1,0 +1,74 @@
+{# Do'kon formasi. Parametrlar: fs (forma holati: values, errors), shop_id (tahrirlash) yoki yo'q (yangi), uid — id prefiksi #}
+{% with v=fs.values e=fs.errors %}
+<form method="post" enctype="multipart/form-data" class="grid gap-4" novalidate>
+  {% csrf_token %}
+  {% if shop_id %}<input type="hidden" name="_action" value="shop_save"><input type="hidden" name="id" value="{{ shop_id }}">{% else %}<input type="hidden" name="_action" value="shop_add">{% endif %}
+  {% if fs.message and not fs.ok %}{% form_message fs %}{% endif %}
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <label for="{{ uid }}{{ shop_id|default:"" }}-name" class="label-sm">Do'kon nomi</label>
+      <input id="{{ uid }}{{ shop_id|default:"" }}-name" name="name" class="input" maxlength="80" value="{{ v.name|default:'' }}" required{% if e.name %} aria-invalid="true"{% endif %}>
+      {% if e.name %}<p class="field-error" role="alert">{{ e.name }}</p>{% endif %}
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label for="{{ uid }}{{ shop_id|default:"" }}-region" class="label-sm">Hudud</label>
+        <select id="{{ uid }}{{ shop_id|default:"" }}-region" name="region" class="select"{% if e.region %} aria-invalid="true"{% endif %}>
+          {% for r in shop_regions %}<option value="{{ r.key }}"{% if r.key == v.region %} selected{% endif %}>{{ r.short }}</option>{% endfor %}
+        </select>
+        {% if e.region %}<p class="field-error" role="alert">{{ e.region }}</p>{% endif %}
+      </div>
+      <div>
+        <label for="{{ uid }}{{ shop_id|default:"" }}-district" class="label-sm">Tuman / shahar</label>
+        <input id="{{ uid }}{{ shop_id|default:"" }}-district" name="district" class="input" maxlength="60" list="shop-districts" value="{{ v.district|default:'' }}">
+      </div>
+    </div>
+    <div>
+      <label for="{{ uid }}{{ shop_id|default:"" }}-address" class="label-sm">Manzil</label>
+      <input id="{{ uid }}{{ shop_id|default:"" }}-address" name="address" class="input" maxlength="200" placeholder="Ko'cha, uy, mo'ljal" value="{{ v.address|default:'' }}">
+    </div>
+    <div>
+      <label for="{{ uid }}{{ shop_id|default:"" }}-hours" class="label-sm">Ish vaqti</label>
+      <input id="{{ uid }}{{ shop_id|default:"" }}-hours" name="work_hours" class="input" maxlength="80" placeholder="Har kuni 8:00–19:00" value="{{ v.work_hours|default:'' }}">
+    </div>
+    <div>
+      <label for="{{ uid }}{{ shop_id|default:"" }}-phone" class="label-sm">Telefon</label>
+      <input id="{{ uid }}{{ shop_id|default:"" }}-phone" name="phone" class="input" inputmode="tel" placeholder="+998 90 123 45 67" value="{{ v.phone|default:'' }}"{% if e.phone %} aria-invalid="true"{% endif %}>
+      {% if e.phone %}<p class="field-error" role="alert">{{ e.phone }}</p>{% endif %}
+    </div>
+    <div>
+      <label for="{{ uid }}{{ shop_id|default:"" }}-telegram" class="label-sm">Telegram (ixtiyoriy)</label>
+      <input id="{{ uid }}{{ shop_id|default:"" }}-telegram" name="telegram" class="input" placeholder="dokon_nomi" value="{{ v.telegram|default:'' }}"{% if e.telegram %} aria-invalid="true"{% endif %}>
+      {% if e.telegram %}<p class="field-error" role="alert">{{ e.telegram }}</p>{% endif %}
+    </div>
+    <div class="sm:col-span-2">
+      <label for="{{ uid }}{{ shop_id|default:"" }}-map" class="label-sm">Xarita havolasi (Yandex yoki Google, ixtiyoriy)</label>
+      <input id="{{ uid }}{{ shop_id|default:"" }}-map" name="map_url" class="input" placeholder="https://yandex.uz/maps/..." value="{{ v.map_url|default:'' }}"{% if e.map_url %} aria-invalid="true"{% endif %}>
+      {% if e.map_url %}<p class="field-error" role="alert">{{ e.map_url }}</p>{% endif %}
+    </div>
+  </div>
+  <fieldset>
+    <legend class="label-sm">Toifalar</legend>
+    <div class="flex flex-wrap gap-2">
+      {% for key, label in shop_categories.items %}
+      <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-line px-3 py-1.5 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-soft">
+        <input type="checkbox" name="categories" value="{{ key }}" class="size-4 accent-[var(--accent)]"{% if key in v.categories %} checked{% endif %}> {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+    {% if e.categories %}<p class="field-error" role="alert">{{ e.categories }}</p>{% endif %}
+  </fieldset>
+  <div>
+    <label for="{{ uid }}{{ shop_id|default:"" }}-desc" class="label-sm">Tavsif (ixtiyoriy)</label>
+    <textarea id="{{ uid }}{{ shop_id|default:"" }}-desc" name="description" class="textarea" rows="3" maxlength="1000" placeholder="Nimalar sotiladi, yetkazib berish, chegirmalar...">{{ v.description|default:'' }}</textarea>
+  </div>
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div class="flex flex-wrap items-end gap-4">
+      <label class="grid gap-1 text-sm font-semibold">Logotip (ixtiyoriy) <input type="file" name="logo" accept="image/jpeg,image/png,image/webp" class="input py-2"></label>
+      <label class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" name="is_active" value="1" class="size-4 accent-[var(--accent)]"{% if v.is_active %} checked{% endif %}> Saytda ko'rinsin</label>
+    </div>
+    <button type="submit" class="btn btn-primary" data-pending="Saqlanmoqda...">{% icon "save" 16 %} Saqlash</button>
+  </div>
+  {% if e.logo %}<p class="field-error" role="alert">{{ e.logo }}</p>{% endif %}
+</form>
+{% endwith %}

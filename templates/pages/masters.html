@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Ustalar · UySmeta{% endblock %}
+{% block description %}{{ place }}dagi tekshirilgan ta'mirlash ustalari: kafelchi, santexnik, elektrik, suvoqchi va boshqalar.{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-12">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Ustalar</p>
+      <h1 class="page-title mt-1">Tekshirilgan ustalar</h1>
+      <p class="mt-1.5 text-muted">Mutaxassislik va tuman bo'yicha saralang, profilidan bevosita bog'laning.</p>
+    </div>
+    <a href="/usta-bolish" class="btn btn-secondary">Usta sifatida qo'shilish</a>
+  </div>
+
+  {% if smeta %}
+  <p class="alert alert-info mb-5">{% icon "info" 18 "mt-px flex-none" %}<span>Tanlagan ustangizga yuboriladigan so'rovga smetangiz avtomatik biriktiriladi.</span></p>
+  {% endif %}
+
+  {# Filtrlar — oddiy GET forma (JS'siz ham ishlaydi, havolani ulashish mumkin) #}
+  <form class="card mb-6 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto] lg:items-end" role="search">
+    {% if smeta %}<input type="hidden" name="smeta" value="{{ smeta }}">{% endif %}
+    <div>
+      <label for="q" class="label-sm">Qidirish</label>
+      <input id="q" name="q" value="{{ q }}" class="input" placeholder="Ism yoki ish turi">
+    </div>
+    <div>
+      <label for="specialty" class="label-sm">Mutaxassislik</label>
+      <select id="specialty" name="specialty" class="select">
+        <option value="">Barchasi</option>
+        {% for s in specialties %}<option{% if s == specialty %} selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="joy" class="label-sm">Tuman / shahar</label>
+      <select id="joy" name="joy" class="select">
+        <option value="">Barcha joylar</option>
+        {% for r in regions %}
+        <optgroup label="{{ r.name }}">
+          <option value="{{ r.key }}|"{% if joy == r.key|add:"|" %} selected{% endif %}>Butun {{ r.short }}</option>
+          {% for d in r.districts %}{% with val=r.key|add:"|"|add:d %}<option value="{{ val }}"{% if joy == val %} selected{% endif %}>{{ d }}</option>{% endwith %}{% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="sort" class="label-sm">Saralash</label>
+      <select id="sort" name="sort" class="select">
+        <option value="rating"{% if sort == "rating" %} selected{% endif %}>Eng yaxshilari</option>
+        <option value="jobs"{% if sort == "jobs" %} selected{% endif %}>Ko'p ish bajarganlar</option>
+        <option value="new"{% if sort == "new" %} selected{% endif %}>Yangi qo'shilganlar</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary min-h-[46px]">{% icon "sliders-horizontal" 16 %} Saralash</button>
+  </form>
+
+  <p class="mb-4 text-sm text-muted" aria-live="polite">
+    {{ page.paginator.count }} ta usta topildi{% if page.paginator.num_pages > 1 %} · {{ page.number }}-sahifa, jami {{ page.paginator.num_pages }}{% endif %}
+    {% if has_filters %} · <a href="/ustalar{% if smeta %}?smeta={{ smeta }}{% endif %}" class="link">Filtrlarni tozalash</a>{% endif %}
+  </p>
+
+  {% if masters %}
+  <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {% for master in masters %}{% include "includes/master_card.html" with estimate_id=smeta %}{% endfor %}
+  </ul>
+
+  {% if page.paginator.num_pages > 1 %}
+  {# Sahifalash: filtrlar (page_query) saqlanadi #}
+  <nav class="mt-8 flex flex-wrap items-center justify-center gap-1.5" aria-label="Sahifalar">
+    {% if page.has_previous %}
+    <a href="?{% if page_query %}{{ page_query }}&{% endif %}sahifa={{ page.previous_page_number }}" class="btn btn-secondary btn-sm" rel="prev">{% icon "arrow-left" 16 %} <span class="max-sm:sr-only">Oldingi</span></a>
+    {% endif %}
+    {% for n in page_numbers %}
+      {% if n == page.paginator.ELLIPSIS %}
+      <span class="px-1.5 text-muted" aria-hidden="true">…</span>
+      {% elif n == page.number %}
+      <span class="btn btn-primary btn-sm min-w-10" aria-current="page">{{ n }}</span>
+      {% else %}
+      <a href="?{% if page_query %}{{ page_query }}&{% endif %}sahifa={{ n }}" class="btn btn-ghost btn-sm min-w-10">{{ n }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if page.has_next %}
+    <a href="?{% if page_query %}{{ page_query }}&{% endif %}sahifa={{ page.next_page_number }}" class="btn btn-secondary btn-sm" rel="next"><span class="max-sm:sr-only">Keyingi</span> {% icon "arrow-right" 16 %}</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <div class="card grid place-items-center gap-3 px-6 py-14 text-center">
+    {% icon "search" 32 "text-muted" %}
+    <p class="font-head text-lg font-bold">Bu shartlarga mos usta topilmadi</p>
+    <p class="text-muted">Boshqa tuman yoki mutaxassislikni tanlab ko'ring.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

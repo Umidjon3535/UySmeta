@@ -1,0 +1,7 @@
+<div>
+  <label for="{{ id }}" class="label">{{ label }}</label>
+  {% if type == "password" %}<div class="relative">{% endif %}
+  <input id="{{ id }}" name="{{ name }}" type="{{ type }}" class="input{% if type == "password" %} pr-11{% endif %}"{% if value != "" %} value="{{ value }}"{% endif %} {{ attrs }}{% if error %} aria-invalid="true" aria-describedby="{{ id }}-error"{% elif hint %} aria-describedby="{{ id }}-hint"{% endif %}>
+  {% if type == "password" %}{% include "includes/password_toggle.html" %}</div>{% endif %}
+  {% if error %}<p id="{{ id }}-error" class="field-error" role="alert">{{ error }}</p>{% elif hint %}<p id="{{ id }}-hint" class="hint">{{ hint }}</p>{% endif %}
+</div>

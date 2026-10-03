@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Ma'lumotlar (SQLite baza, yuklangan rasmlar) va yig'ilgan static
+/data/
+/staticfiles/
+
+.coverage
+htmlcov/
+.DS_Store
+
+# Saytga tegishli emas: video taqdimot (katta), Claude sozlamalari
+/taqdimot/
+/.claude/

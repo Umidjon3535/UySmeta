@@ -1,0 +1,10 @@
+{% with error=state.errors|get:name %}
+<div>
+  <label for="{{ name }}" class="label-sm">{{ label }}</label>
+  <div class="input-affix">
+    <input class="input max-[400px]:pl-2.5 max-[400px]:pr-7" type="text" inputmode="decimal" id="{{ name }}" name="{{ name }}" value="{{ value }}" autocomplete="off"{% if error %} aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}>
+    <span class="affix" aria-hidden="true">{{ unit }}</span>
+  </div>
+  <p class="field-error" id="{{ name }}-error" role="alert"{% if not error %} hidden{% endif %}>{{ error|default:"" }}</p>
+</div>
+{% endwith %}

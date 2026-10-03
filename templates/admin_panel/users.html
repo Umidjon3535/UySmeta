@@ -1,0 +1,28 @@
+{% include "admin_panel/section_title.html" with title="Foydalanuvchilar" text="Saytda ro'yxatdan o'tganlar" %}
+<form class="mb-4 flex gap-2" role="search">
+  <input type="hidden" name="tab" value="foydalanuvchilar">
+  <label for="user-q" class="sr-only">Qidirish</label>
+  <input id="user-q" name="q" value="{{ q }}" class="input max-w-sm" placeholder="Ism yoki telefon raqam">
+  <button class="btn btn-secondary">{% icon "search" 16 %} Qidirish</button>
+</form>
+{% if users %}
+<div class="card table-scroll">
+  <table class="data-table min-w-[640px]">
+    <thead><tr><th>Ism</th><th>Telefon</th><th>Rol</th><th>Telegram</th><th>Smetalar</th><th>Qo'shilgan</th></tr></thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td class="font-semibold">{{ u.name }}</td>
+        <td><a class="link whitespace-nowrap" href="tel:{{ u.phone }}">{{ u.phone|phone }}</a></td>
+        <td><span class="badge {% if u.role == 'admin' %}{% elif u.role == 'master' %}badge-success{% else %}badge-muted{% endif %} px-2.5 py-0.5 text-xs">{{ u.role|role_label }}</span></td>
+        <td>{% if u.telegram %}{% icon "check-circle2" 18 "text-success" "ulangan" %}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+        <td class="tabular-nums">{{ u.estimates_count }}</td>
+        <td class="whitespace-nowrap text-muted">{{ u.created_at|uzdate }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+{% include "admin_panel/empty.html" with title="Hech kim topilmadi" %}
+{% endif %}

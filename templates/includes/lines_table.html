@@ -1,0 +1,12 @@
+<div>
+  <h3 class="mb-2.5 flex items-center gap-2 text-[17px] font-bold"><span class="text-accent">{% icon icon_name 20 %}</span> {{ title }}</h3>
+  <table class="estimate-table">
+    <thead><tr><th scope="col">{{ h1 }}</th><th scope="col">{{ h2 }}</th><th scope="col" class="num">Narxi</th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+      <tr><td>{{ row.name }}</td><td class="qty">{{ row|qty }}</td><td class="num">{{ row.cost|money }}</td></tr>
+      {% endfor %}
+    </tbody>
+    <tfoot><tr><td colspan="2">{{ total_label }}</td><td class="num">{{ total|money }}</td></tr></tfoot>
+  </table>
+</div>

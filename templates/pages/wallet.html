@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Hamyon · UySmeta{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-12">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="page-title">Hamyon</h1>
+      <p class="mt-1.5 text-muted">Balansdan tariflarni bir zumda sotib olasiz yoki pulni kartangizga yechib olasiz.</p>
+    </div>
+    <a href="/narxlar" class="btn btn-primary">{% icon "tags" 16 %} Tariflar</a>
+  </div>
+
+  {% if new_withdrawal %}
+  <p class="alert alert-success mb-6" role="status">{% icon "check-circle2" 18 "mt-px flex-none" %}<span>So'rov #{{ new_withdrawal }} qabul qilindi. Summa balansdan ushlab qolindi, kartangizga odatda 1 ish kuni ichida o'tkaziladi.</span></p>
+  {% endif %}
+
+  <div class="grid items-start gap-6 lg:grid-cols-[1fr_380px]">
+    <div class="grid min-w-0 gap-6">
+      <section class="card flex flex-wrap items-center justify-between gap-4 p-5 sm:p-7">
+        <div>
+          <p class="text-sm font-semibold text-muted">Balans</p>
+          <p class="font-head text-[clamp(2rem,1.4rem+2vw,2.8rem)] font-extrabold tabular-nums">{{ balance|money }}</p>
+        </div>
+        <span class="icon-box size-14">{% icon "wallet" 28 %}</span>
+      </section>
+
+      <section class="card p-5 sm:p-6" aria-labelledby="history-title">
+        <h2 id="history-title" class="mb-4 text-xl font-extrabold">Tarix</h2>
+        {% if transactions %}
+        <ul class="grid gap-3">
+          {% for t in transactions %}
+          <li class="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-line pb-3 last:border-0 last:pb-0">
+            <span class="grid size-9 flex-none place-items-center rounded-full {% if t.amount > 0 %}bg-success-soft text-success{% else %}bg-danger-soft text-danger{% endif %}">
+              {% if t.kind == "bonus" %}{% icon "party-popper" 16 %}{% elif t.kind == "purchase" %}{% icon "tags" 16 %}{% elif t.kind == "withdraw" %}{% icon "credit-card" 16 %}{% else %}{% icon "wallet" 16 %}{% endif %}
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="font-semibold">{{ t.description|default:t.get_kind_display }}</p>
+              <p class="text-sm text-muted">{{ t.created_at|date:"d.m.Y H:i" }} · qoldiq {{ t.balance_after|money }}{% if t.order_id %} · <a class="link" href="/buyurtma/{{ t.order_id }}">buyurtma</a>{% endif %}</p>
+            </div>
+            <strong class="whitespace-nowrap font-head tabular-nums {% if t.amount > 0 %}text-success{% else %}text-danger{% endif %}">{% if t.amount > 0 %}+{% endif %}{{ t.amount|money }}</strong>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Hali amallar yo'q.</p>
+        {% endif %}
+      </section>
+    </div>
+
+    <aside class="grid gap-6">
+      <section class="card p-5 sm:p-6" aria-labelledby="withdraw-title">
+        <h2 id="withdraw-title" class="text-lg font-extrabold">Pul yechish</h2>
+        <p class="mb-4 mt-1 text-sm text-muted">Yechish mumkin: <strong class="text-fg">{{ withdrawable|money }}</strong>{% if not bonus_withdrawable %} (bonus yechilmaydi, faqat xaridlarga){% endif %}</p>
+        <form method="post" class="grid gap-3" novalidate>
+          {% csrf_token %}
+          {% form_message state %}
+          {% field state "amount" "Summa, so'm" inputmode="numeric" placeholder=min_withdraw|stringformat:"d" %}
+          {% field state "card" "Karta raqami" inputmode="numeric" autocomplete="cc-number" placeholder="8600 0000 0000 0000" %}
+          {% field state "holder" "Karta egasi" autocomplete="cc-name" placeholder="ISM FAMILIYA" %}
+          <button type="submit" class="btn btn-primary" data-pending="Yuborilmoqda..." data-confirm="Summa balansdan darhol ushlab qolinadi va kartangizga o'tkaziladi. Davom etasizmi?"{% if withdrawable < min_withdraw %} disabled{% endif %}>{% icon "credit-card" 16 %} Yechib olish</button>
+          <p class="hint">Eng kam summa {{ min_withdraw|money }}. Rad etilsa, pul balansga qaytadi.</p>
+        </form>
+      </section>
+
+      {% if withdrawals %}
+      <section class="card p-5 sm:p-6" aria-labelledby="w-title">
+        <h2 id="w-title" class="mb-3 text-lg font-extrabold">Yechish so'rovlari</h2>
+        <ul class="grid gap-2 text-sm">
+          {% for w in withdrawals %}
+          <li class="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2 last:border-0">
+            <span>#{{ w.id }} · ···{{ w.card_number|slice:"-4:" }} · {{ w.created_at|uzdate }}</span>
+            <span class="flex items-center gap-2"><strong class="tabular-nums">{{ w.amount|money }}</strong>
+              <span class="badge {% if w.status == 'done' %}badge-success{% elif w.status == 'rejected' %}badge-danger{% else %}badge-warning{% endif %} px-2 py-0 text-xs">{{ w.get_status_display }}</span></span>
+            {% if w.note %}<span class="w-full text-muted">{{ w.note }}</span>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </aside>
+  </div>
+</div>
+{% endblock %}

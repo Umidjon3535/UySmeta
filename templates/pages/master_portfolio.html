@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Portfolio · UySmeta{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="container-page py-6 md:py-10">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Usta kabineti</p>
+      <h1 class="page-title mt-1">Portfolio</h1>
+      <p class="mt-1.5 text-muted">Bajargan ishlaringiz rasmlari ommaviy sahifangizda galereya bo'lib chiqadi — mijozlar ustani tanlashda birinchi shunga qaraydi.</p>
+    </div>
+    {% if master.status == "approved" %}<a href="/ustalar/{{ master.id }}" class="btn btn-secondary">{% icon "eye" 16 %} Mijozlar qanday ko'radi</a>{% endif %}
+  </div>
+
+  {% if saved %}<p class="alert alert-success mb-5" role="status">{% icon "check-circle2" 18 "mt-px flex-none" %} Portfolio yangilandi.</p>{% endif %}
+
+  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <section class="card min-w-0 p-5 sm:p-6" aria-labelledby="works-title">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 id="works-title" class="text-lg font-extrabold">Ishlaringiz</h2>
+        <span class="text-sm text-muted">{{ portfolio|length }} / {{ portfolio_max }} rasm</span>
+      </div>
+      {% if portfolio %}
+      <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {% for w in portfolio %}
+        <li class="relative overflow-hidden rounded-[14px] border border-line bg-bg">
+          <img src="{{ w.image|photo_url }}" alt="{{ w.title|default:'Bajarilgan ish' }}" class="aspect-[4/3] w-full object-cover" loading="lazy">
+          {% if w.title %}<p class="truncate px-3 py-2 text-sm">{{ w.title }}</p>{% endif %}
+          <form method="post" class="absolute right-2 top-2">
+            {% csrf_token %}
+            <input type="hidden" name="_action" value="portfolio_delete">
+            <input type="hidden" name="id" value="{{ w.id }}">
+            <button type="submit" class="grid size-9 place-items-center rounded-full bg-black/60 text-white hover:bg-danger" data-confirm="Bu rasm portfoliodan o'chirilsinmi?" aria-label="O'chirish">{% icon "trash2" 16 %}</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="grid place-items-center gap-2 rounded-[14px] border border-dashed border-line px-6 py-12 text-center">
+        {% icon "image-icon" 32 "text-muted" %}
+        <p class="font-semibold">Hali rasm yo'q</p>
+        <p class="text-sm text-muted">«Rasm qo'shish» formasidan birinchi ishingizni qo'shing.</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <aside class="grid min-w-0 gap-4 lg:sticky lg:top-[calc(var(--header-h)+16px)]">
+      <section class="card p-5" aria-labelledby="add-title">
+        <h2 id="add-title" class="mb-4 flex items-center gap-2 text-lg font-extrabold">{% icon "image-plus" 18 "text-accent" %} Rasm qo'shish</h2>
+        {% form_message portfolio_state %}
+        {% if portfolio|length >= portfolio_max %}
+        <p class="text-sm text-muted">«{{ master_plan.title }}» tarifidagi {{ portfolio_max }} ta rasm chegarasi to'ldi.</p>
+        <a href="/narxlar" class="btn btn-primary btn-block mt-3">Tarifni oshirish</a>
+        {% else %}
+        <form method="post" enctype="multipart/form-data" class="grid gap-3" data-upload>
+          {% csrf_token %}
+          <input type="hidden" name="_action" value="portfolio_add">
+          <label for="f-images" class="flex cursor-pointer flex-col items-center gap-1.5 rounded-[14px] border-2 border-dashed px-4 py-6 text-center transition-colors hover:border-accent hover:bg-accent-soft has-[:focus-visible]:border-accent {% if portfolio_state.errors.images %}border-danger{% else %}border-line{% endif %}">
+            <span class="text-accent">{% icon "image-plus" 28 %}</span>
+            <span class="font-semibold" data-upload-label>Ish rasmlarini tanlang</span>
+            <span class="text-sm text-muted">Bir nechta rasm birdan · JPG, PNG, WEBP · 5 MB gacha</span>
+            <input id="f-images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple required class="sr-only">
+          </label>
+          {% if portfolio_state.errors.images %}<p class="field-error -mt-1" role="alert">{{ portfolio_state.errors.images }}</p>{% endif %}
+          <input name="title" class="input" maxlength="120" aria-label="Izoh (ixtiyoriy)" placeholder="Izoh: Vannaxona ta'miri, Yunusobod" value="{{ portfolio_state.values.title|default:'' }}">
+          <button type="submit" class="btn btn-primary" data-pending="Yuklanmoqda...">{% icon "image-plus" 16 %} Qo'shish</button>
+        </form>
+        {% endif %}
+      </section>
+      <section class="card p-5 text-sm">
+        <p class="font-semibold">Tarifingiz: {{ master_plan.title }}</p>
+        <p class="mt-1 text-muted">Portfolioda {{ portfolio_max }} tagacha rasm. Pro — 20 ta, Top usta — 50 ta.</p>
+        <a href="/narxlar" class="link mt-2 inline-block">Tariflar →</a>
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}

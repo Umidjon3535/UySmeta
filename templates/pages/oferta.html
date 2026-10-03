@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Ommaviy oferta · UySmeta{% endblock %}
+{% block description %}UySmeta xizmatlaridan foydalanish shartlari: smeta, tariflar, ichki hamyon, ustalar katalogi va shaxsiy ma'lumotlar.{% endblock %}
+
+{% block content %}
+{# Rekvizitlar [kvadrat qavs] ichida — yuridik shaxs ochilgach to'ldiring. Narx va bonuslar sozlamalardan olinadi. #}
+<article class="container-page max-w-3xl py-8 md:py-12">
+  <p class="eyebrow">Huquqiy hujjat</p>
+  <h1 class="text-3xl font-extrabold">Ommaviy oferta</h1>
+  <p class="mt-2 text-muted">UySmeta xizmatlaridan foydalanish shartnomasi · Tahrir sanasi: 3-oktabr, 2026-yil</p>
+
+  <div class="mt-8 grid gap-8">
+    <section>
+      <h2 class="mb-2 text-xl font-bold">1. Umumiy qoidalar</h2>
+      <div class="grid gap-3 text-muted">
+        <p>1.1. Ushbu hujjat O'zbekiston Respublikasi Fuqarolik kodeksining 367-moddasiga muvofiq ommaviy oferta hisoblanadi. Unda UySmeta veb-sayti (keyingi o'rinlarda — «Platforma») egasi [Kompaniya nomi, STIR: _______] (keyingi o'rinlarda — «Ijrochi») va Platformadan foydalanuvchi har qanday jismoniy yoki yuridik shaxs (keyingi o'rinlarda — «Foydalanuvchi») o'rtasidagi munosabatlar belgilanadi.</p>
+        <p>1.2. Foydalanuvchi ro'yxatdan o'tish formasida «Ommaviy oferta shartlarini o'qidim va qabul qilaman» belgisini qo'yib, telefon raqamini tasdiqlash kodi orqali tasdiqlagan paytdan boshlab ofertani to'liq va so'zsiz qabul qilgan (aksept) hisoblanadi.</p>
+        <p>1.3. Ijrochi oferta matnini oldindan xabar bermasdan o'zgartirishi mumkin. Yangi tahrir saytga joylangan paytdan kuchga kiradi. Platformadan foydalanishni davom ettirish yangi tahrirga rozilik bildiradi.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mb-2 text-xl font-bold">2. Xizmatlar</h2>
+      <div class="grid gap-3 text-muted">
+        <p>2.1. Platforma quyidagi xizmatlarni ko'rsatadi:</p>
+        <ul class="grid list-disc gap-2 pl-5">
+          <li>ta'mirlash ishlari va materiallar uchun taxminiy smetani bepul hisoblash;</li>
+          <li>xona rasmini sun'iy intellekt (AI) yordamida tahlil qilish va dizayn loyihasini tayyorlash;</li>
+          <li>pullik tariflar:{% for plan in plans %} «{{ plan.title }}» — {{ plan.price|money }}{% if not forloop.last %};{% endif %}{% endfor %};</li>
+          <li>ustalar katalogi — mijozni usta bilan bog'lash;</li>
+          <li>ichki hamyon — tariflar uchun to'lov qilish.</li>
+        </ul>
+        <p>2.2. Smeta va AI natijalari bozor narxlari va kiritilgan ma'lumotlar asosida <strong class="text-fg">taxminiy</strong> hisoblanadi. Ular rasmiy loyiha-smeta hujjati emas. Haqiqiy xarajat material narxi, ish hajmi va usta narxiga qarab farq qilishi mumkin.</p>
+        <p>2.3. Tarif narxlari «<a href="/narxlar" class="link">Narxlar</a>» sahifasida ko'rsatiladi. Ijrochi narxlarni o'zgartirishi mumkin. Avval to'langan tariflarga o'zgarish ta'sir qilmaydi.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mb-2 text-xl font-bold">3. Ro'yxatdan o'tish va hisob</h2>
+      <div class="grid gap-3 text-muted">
+        <p>3.1. Ro'yxatdan o'tish uchun ism, familiya, telefon raqam va parol kiritiladi. Raqam Telegram yoki SMS orqali yuborilgan kod bilan tasdiqlanadi.</p>
+        <p>3.2. Foydalanuvchi o'zi haqida to'g'ri ma'lumot berishi va parolini boshqalarga bermasligi shart. Hisob orqali bajarilgan barcha amallar uchun Foydalanuvchi javobgar.</p>
+        <p>3.3. Bir telefon raqamga faqat bitta hisob ochiladi.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mb-2 text-xl font-bold">4. Ichki hamyon va to'lovlar</h2>
+      <div class="grid gap-3 text-muted">
+        <p>4.1. Hamyon Platforma ichidagi hisob bo'lib, undagi mablag' faqat Platforma xizmatlariga sarflanadi. Hamyon bank hisobvarag'i yoki elektron pul hisoblanmaydi.</p>
+        {% if signup_bonus %}<p>4.2. Ro'yxatdan o'tgan har bir yangi Foydalanuvchiga bir marta {{ signup_bonus|money }} bonus beriladi. Bonus aksiya bo'lib, Ijrochi uning miqdorini o'zgartirishi yoki aksiyani to'xtatishi mumkin.{% if not bonus_withdrawable %} Bonus mablag'ini kartaga yechib bo'lmaydi, u faqat tariflarga sarflanadi.{% endif %}</p>{% endif %}
+        <p>4.3. Tarif hamyon balansidan to'lanadi va darhol faollashadi. Faollashgan tarif uchun to'langan mablag' qaytarilmaydi. Texnik nosozlik tufayli xizmat ko'rsatilmagan holatlar bundan mustasno.</p>
+        <p>4.4. Hamyondagi yechish mumkin bo'lgan mablag'ni bank kartasiga chiqarish uchun so'rov yuborilishi mumkin (eng kami — {{ min_withdraw|money }}). So'rov administrator tomonidan tekshiriladi va qo'lda bajariladi.</p>
+        <p>4.5. Firibgarlik, bir nechta soxta hisob ochish yoki bonusdan noto'g'ri foydalanish aniqlansa, Ijrochi hisobni bloklash va bonuslarni bekor qilish huquqiga ega.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mb-2 text-xl font-bold">5. Ustalar katalogi</h2>
+      <div class="grid gap-3 text-muted">
+        <p>5.1. Platforma faqat mijoz va usta o'rtasida vositachi. Ta'mirlash ishlari bo'yicha shartnoma mijoz va usta o'rtasida bevosita tuziladi.</p>
+        <p>5.2. Ijrochi ustalar arizalarini ko'rib chiqadi, ammo ustaning ish sifati, muddati, narxi va kafolati uchun javobgar emas. Kelishmovchiliklar mijoz va usta o'rtasida hal qilinadi.</p>
+        <p>5.3. Sharhlar haqqoniy bo'lishi kerak. Haqoratli, yolg'on yoki reklama mazmunidagi sharhlar o'chiriladi.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mb-2 text-xl font-bold">6. Shaxsiy ma'lumotlar</h2>
+      <div class="grid gap-3 text-muted">
+        <p>6.1. Ofertani qabul qilish bilan Foydalanuvchi «Shaxsga doir ma'lumotlar to'g'risida»gi Qonunga muvofiq ism, familiya, telefon raqami va yuklangan rasmlarini xizmat ko'rsatish maqsadida qayta ishlashga rozilik beradi.</p>
+        <p>6.2. Parollar shifrlangan (xeshlangan) holda saqlanadi. Ijrochi ma'lumotlarni uchinchi shaxslarga sotmaydi. Ma'lumotlar faqat qonunda belgilangan hollarda yoki Foydalanuvchi o'zi usta bilan bog'lanish so'rovini yuborganda o'sha ustaga beriladi.</p>
+        <p>6.3. Yuklangan rasmlar tahlil uchun AI xizmatlariga (masalan, Google Gemini, Anthropic Claude) yuborilishi mumkin.</p>
+        <p>6.4. Foydalanuvchi hisobini va ma'lumotlarini o'chirishni so'rash uchun Ijrochiga murojaat qilishi mumkin.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mb-2 text-xl font-bold">7. Javobgarlik</h2>
+      <div class="grid gap-3 text-muted">
+        <p>7.1. Platforma «boricha» (as is) taqdim etiladi. Ijrochi uning uzluksiz va xatosiz ishlashiga harakat qiladi, lekin texnik uzilishlar uchun javobgar emas.</p>
+        <p>7.2. Ijrochi smeta yoki AI natijalari asosida Foydalanuvchi qabul qilgan qarorlar va ularning oqibatlari uchun javobgar emas.</p>
+        <p>7.3. Foydalanuvchi Platformadan qonunga zid maqsadlarda, boshqa shaxslar nomidan yoki tizimni buzish uchun foydalanmasligi shart.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mb-2 text-xl font-bold">8. Nizolarni hal qilish</h2>
+      <div class="grid gap-3 text-muted">
+        <p>8.1. Nizolar avval muzokara yo'li bilan hal qilinadi. Murojaatga 10 ish kuni ichida javob beriladi.</p>
+        <p>8.2. Kelishuvga erishilmasa, nizo O'zbekiston Respublikasi qonunchiligiga muvofiq sudda ko'riladi.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mb-2 text-xl font-bold">9. Ijrochi rekvizitlari</h2>
+      <ul class="card grid gap-2 p-6 text-muted">
+        <li><strong class="text-fg">Nomi:</strong> [Kompaniya nomi / YaTT F.I.Sh.]</li>
+        <li><strong class="text-fg">STIR:</strong> [_________]</li>
+        <li><strong class="text-fg">Manzil:</strong> [Samarqand viloyati, ...]</li>
+        <li><strong class="text-fg">Bank rekvizitlari:</strong> [h/r, bank, MFO]</li>
+        <li><strong class="text-fg">Aloqa:</strong> {{ contact_phone|phone }} · Telegram: @{{ contact_telegram }}</li>
+      </ul>
+    </section>
+  </div>
+</article>
+{% endblock %}

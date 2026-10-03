@@ -1,0 +1,68 @@
+{% include "admin_panel/section_title.html" with title="Yordam chat" text="Saytdagi chat oynasidan kelgan savollar. Javobingiz mijozga chat oynasida (va Telegram'i ulangan bo'lsa, Telegram'da) ko'rinadi. Telegram'da bot xabariga Reply qilib ham javob berish mumkin." %}
+{% include "admin_panel/chips.html" %}
+
+{% if support_threads or support_chat %}
+<div class="grid grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+  {# Suhbatlar ro'yxati #}
+  <ul class="grid content-start gap-2">
+    {% for t in support_threads %}
+    <li>
+      <a href="/admin?tab=yordam{% if holat %}&amp;holat={{ holat }}{% endif %}&amp;chat={{ t.id }}"{% if support_chat.id == t.id %} aria-current="page"{% endif %} class="card flex items-center gap-3 p-3 transition-colors {% if support_chat.id == t.id %}!border-accent bg-accent-soft{% else %}hover:border-accent{% endif %}">
+        <span class="avatar size-10 text-sm" aria-hidden="true">{{ t.name|default:"M"|initials }}</span>
+        <span class="min-w-0 flex-1">
+          <span class="flex items-center justify-between gap-2">
+            <strong class="truncate text-sm">{{ t.name|default:"Mehmon" }}</strong>
+            <span class="flex-none text-xs text-muted">{{ t.updated_at|uzdate }}</span>
+          </span>
+          <span class="block truncate text-xs text-muted">{{ t.phone|phone|default:"—" }}{% if t.status == "closed" %} · yopilgan{% endif %}</span>
+        </span>
+        {% if t.unread %}<span class="grid min-w-6 place-items-center rounded-full bg-warning px-1.5 text-xs font-bold text-white" aria-label="{{ t.unread }} ta o'qilmagan">{{ t.unread }}</span>{% endif %}
+      </a>
+    </li>
+    {% empty %}
+    <li class="text-sm text-muted">Bu bo'limda suhbat yo'q.</li>
+    {% endfor %}
+  </ul>
+
+  {# Tanlangan suhbat #}
+  {% if support_chat %}
+  <section class="card flex min-h-[420px] flex-col" aria-labelledby="chat-title">
+    <header class="flex flex-wrap items-center gap-3 border-b border-line p-4">
+      <div class="min-w-0 flex-1">
+        <h3 id="chat-title" class="font-bold">{{ support_chat.name|default:"Mehmon" }} <span class="font-normal text-muted">#{{ support_chat.id }}</span></h3>
+        <p class="text-sm text-muted">{% if support_chat.user_id %}Ro'yxatdan o'tgan foydalanuvchi{% else %}Mehmon{% endif %}{% if support_chat.page %} · sahifa: <code class="code">{{ support_chat.page }}</code>{% endif %}</p>
+      </div>
+      {% if support_chat.phone %}{% include "admin_panel/phone_actions.html" with phone_number=support_chat.phone %}{% endif %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="chat" value="{{ support_chat.id }}">
+        {% if support_chat.status == "open" %}
+        <button type="submit" name="_action" value="support_close" class="btn btn-ghost btn-sm">{% icon "check" 14 %} Yopish</button>
+        {% else %}
+        <button type="submit" name="_action" value="support_open" class="btn btn-ghost btn-sm">Qayta ochish</button>
+        {% endif %}
+      </form>
+    </header>
+    <ol class="grid flex-1 content-start gap-2 p-4">
+      {% for m in support_messages %}
+      <li class="flex {% if m.from_admin %}justify-end{% endif %}">
+        <div class="max-w-[85%] rounded-2xl px-3.5 py-2 text-[15px] {% if m.from_admin %}rounded-br-md bg-accent text-on-accent{% else %}rounded-bl-md bg-bg{% endif %}">
+          <p class="whitespace-pre-line break-words">{{ m.text }}</p>
+          <p class="mt-0.5 text-right text-[11px] opacity-70">{% if m.from_admin %}Siz · {% endif %}{{ m.created_at|uzdate }} {{ m.created_at|time:"H:i" }}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+    <form method="post" class="flex gap-2 border-t border-line p-3">
+      {% csrf_token %}
+      <input type="hidden" name="_action" value="support_reply">
+      <input type="hidden" name="chat" value="{{ support_chat.id }}">
+      <textarea name="text" rows="2" maxlength="1000" class="textarea min-h-0 flex-1" placeholder="Javobingizni yozing..." aria-label="Javob" required></textarea>
+      <button type="submit" class="btn btn-primary self-end" data-pending="...">{% icon "send" 16 %} Yuborish</button>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% else %}
+{% include "admin_panel/empty.html" with title="Hozircha savollar yo'q" text="Mijoz saytdagi chat tugmasi orqali yozsa, shu yerda va Telegram'ingizda ko'rinadi." %}
+{% endif %}

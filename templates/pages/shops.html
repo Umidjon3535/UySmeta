@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Qurilish do'konlari · UySmeta{% endblock %}
+{% block description %}{{ place }}dagi qurilish materiallari, kafel, santexnika, elektr va mebel do'konlari: manzil, telefon, ish vaqti.{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-12">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Do'konlar</p>
+      <h1 class="page-title mt-1">Qurilish do'konlari</h1>
+      <p class="mt-1.5 text-muted">Smetangizdagi materiallarni yaqin atrofdagi do'konlardan toping.</p>
+    </div>
+  </div>
+
+  {# Filtrlar — oddiy GET forma (JS'siz ham ishlaydi, havolani ulashish mumkin) #}
+  <form class="card mb-6 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_auto] lg:items-end" role="search">
+    <div>
+      <label for="q" class="label-sm">Qidirish</label>
+      <input id="q" name="q" value="{{ q }}" class="input" placeholder="Do'kon yoki mahsulot: laminat, unitaz...">
+    </div>
+    <div>
+      <label for="toifa" class="label-sm">Toifa</label>
+      <select id="toifa" name="toifa" class="select">
+        <option value="">Barchasi</option>
+        {% for key, label in categories.items %}<option value="{{ key }}"{% if key == category %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="joy" class="label-sm">Tuman / shahar</label>
+      <select id="joy" name="joy" class="select">
+        <option value="">Barcha joylar</option>
+        {% for r in regions %}
+        <optgroup label="{{ r.name }}">
+          <option value="{{ r.key }}|"{% if joy == r.key|add:"|" %} selected{% endif %}>Butun {{ r.short }}</option>
+          {% for d in r.districts %}{% with val=r.key|add:"|"|add:d %}<option value="{{ val }}"{% if joy == val %} selected{% endif %}>{{ d }}</option>{% endwith %}{% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary min-h-[46px]">{% icon "search" 16 %} Qidirish</button>
+  </form>
+
+  <p class="mb-4 text-sm text-muted" aria-live="polite">
+    {{ page.paginator.count }} ta do'kon topildi{% if page.paginator.num_pages > 1 %} · {{ page.number }}-sahifa, jami {{ page.paginator.num_pages }}{% endif %}
+    {% if has_filters %} · <a href="/dokonlar" class="link">Filtrlarni tozalash</a>{% endif %}
+  </p>
+
+  {% if shops %}
+  <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {% for shop in shops %}
+    <li class="card flex flex-col p-5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-accent">
+      <div class="flex items-center gap-3">
+        {% if shop.logo %}<img src="{{ shop.logo|photo_url }}" alt="" class="size-12 flex-none rounded-xl object-cover" loading="lazy">{% else %}<span class="icon-box size-12 flex-none">{% icon "store" 22 %}</span>{% endif %}
+        <div class="min-w-0">
+          <h2 class="truncate text-[17px] font-bold"><a href="/dokonlar/{{ shop.id }}" class="hover:text-accent">{{ shop.name }}</a></h2>
+          <p class="truncate text-sm text-muted">{{ shop.district|default:"" }}</p>
+        </div>
+      </div>
+      <ul class="mt-3.5 flex flex-wrap gap-1.5" aria-label="Toifalar">
+        {% for c in shop.category_keys|slice:":3" %}<li class="rounded-full bg-accent-soft px-2.5 py-0.5 text-[12.5px] font-semibold text-accent">{{ categories|get:c }}</li>{% endfor %}
+        {% if shop.category_keys|length > 3 %}<li class="rounded-full bg-bg px-2.5 py-0.5 text-[12.5px] text-muted">+{{ shop.category_keys|length|add:"-3" }}</li>{% endif %}
+      </ul>
+      {% if shop.previews %}
+      <a href="/dokonlar/{{ shop.id }}#mahsulotlar" class="mt-3.5 grid grid-cols-3 gap-1.5" aria-label="{{ shop.name }} mahsulotlari">
+        {% for p in shop.previews %}<span class="block overflow-hidden rounded-lg bg-white"><img src="{{ p.image_url }}" alt="" class="aspect-square w-full object-contain p-1" loading="lazy"></span>{% endfor %}
+      </a>
+      {% endif %}
+      {% if shop.product_count %}
+      <p class="mt-3 text-sm"><strong>{{ shop.product_count }}</strong> <span class="text-muted">ta mahsulot · narxlar</span> <strong class="tabular-nums">{{ shop.price_from|money }}</strong><span class="text-muted">dan</span></p>
+      {% endif %}
+      <ul class="my-4 grid gap-2 text-sm text-muted">
+        {% if shop.address %}<li class="flex items-start gap-2">{% icon "map-pin" 16 "mt-0.5 flex-none" %}<span>{{ shop.address }}</span></li>{% endif %}
+        {% if shop.work_hours %}<li class="flex items-center gap-2">{% icon "clock" 16 "flex-none" %}{{ shop.work_hours }}</li>{% endif %}
+      </ul>
+      <div class="mt-auto flex gap-2">
+        {% if shop.phone %}<a href="tel:{{ shop.phone }}" class="btn btn-secondary flex-1">{% icon "phone" 16 %} Qo'ng'iroq</a>{% endif %}
+        <a href="/dokonlar/{{ shop.id }}" class="btn btn-ghost flex-1">Batafsil</a>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+
+  {% if page.paginator.num_pages > 1 %}
+  <nav class="mt-8 flex flex-wrap items-center justify-center gap-1.5" aria-label="Sahifalar">
+    {% if page.has_previous %}
+    <a href="?{% if page_query %}{{ page_query }}&{% endif %}sahifa={{ page.previous_page_number }}" class="btn btn-secondary btn-sm" rel="prev">{% icon "arrow-left" 16 %} <span class="max-sm:sr-only">Oldingi</span></a>
+    {% endif %}
+    {% for n in page_numbers %}
+      {% if n == page.paginator.ELLIPSIS %}<span class="px-1.5 text-muted" aria-hidden="true">…</span>
+      {% elif n == page.number %}<span class="btn btn-primary btn-sm min-w-10" aria-current="page">{{ n }}</span>
+      {% else %}<a href="?{% if page_query %}{{ page_query }}&{% endif %}sahifa={{ n }}" class="btn btn-ghost btn-sm min-w-10">{{ n }}</a>{% endif %}
+    {% endfor %}
+    {% if page.has_next %}
+    <a href="?{% if page_query %}{{ page_query }}&{% endif %}sahifa={{ page.next_page_number }}" class="btn btn-secondary btn-sm" rel="next"><span class="max-sm:sr-only">Keyingi</span> {% icon "arrow-right" 16 %}</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <div class="card grid place-items-center gap-3 px-6 py-14 text-center">
+    {% icon "store" 32 "text-muted" %}
+    {% if has_filters %}
+    <p class="font-head text-lg font-bold">Bu shartlarga mos do'kon topilmadi</p>
+    <p class="text-muted">Boshqa tuman yoki toifani tanlab ko'ring.</p>
+    {% else %}
+    <p class="font-head text-lg font-bold">Do'konlar tez orada qo'shiladi</p>
+    <p class="text-muted">Hududingizdagi qurilish do'konlarini katalogga qo'shyapmiz.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# Do'kon egalari uchun hamkorlik #}
+  <section id="hamkorlik" class="mt-16 scroll-mt-24" aria-labelledby="partner-title">
+    <h2 id="partner-title" class="text-2xl font-extrabold">Do'koningiz bormi?</h2>
+    <p class="mt-1.5 max-w-2xl text-muted">Har kuni ta'mir rejalashtirayotgan xaridorlar UySmeta'da material ro'yxatini oladi. Hamkor yoki homiy bo'lish uchun administratorga bog'laning — shartlarni kelishib, do'koningizni katalogga o'zimiz qo'shamiz.</p>
+    <ul class="mt-6 grid gap-5 md:grid-cols-3">
+      {% for p in points %}
+      <li class="card p-6">
+        <span class="icon-box">{% icon p.icon 20 %}</span>
+        <h3 class="mt-4 text-lg font-bold">{{ p.title }}</h3>
+        <p class="mt-1.5 text-muted">{{ p.text }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="card mt-5 flex flex-wrap items-center justify-between gap-5 p-6 sm:p-8">
+      <div>
+        <p class="text-xl font-extrabold">Hamkorlik va homiylik</p>
+        <p class="mt-1 text-muted">Administratorga yozing: do'kon nomi, manzili va telefoni. Do'kon faqat administrator tomonidan qo'shiladi.</p>
+      </div>
+      <a href="https://t.me/{{ contact_telegram }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">{% icon "send" 16 %} Administratorga yozish</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

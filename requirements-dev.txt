@@ -1,0 +1,4 @@
+-r requirements.txt
+# Tailwind CSS standalone (Node.js shart emas): `tailwindcss -i static/src/input.css -o static/css/app.css --minify`
+pytailwindcss>=0.2
+Pillow>=10.0

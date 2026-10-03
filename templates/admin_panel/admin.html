@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Boshqaruv · UySmeta{% endblock %}
+{% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+
+{% block content %}
+<div class="container-page py-6 md:py-8">
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-8">
+    {# Chap menyu: guruhlarga ajratilgan. Telefonda — gorizontal aylantiriladigan qator (guruh nomlarisiz) #}
+    <aside class="min-w-0 lg:sticky lg:top-[calc(var(--header-h)+24px)] lg:self-start">
+      <p class="mb-3 hidden font-head text-sm font-bold uppercase tracking-wider text-muted lg:block">Boshqaruv paneli</p>
+      <nav class="table-scroll -mx-4 px-4 lg:mx-0 lg:px-0" aria-label="Admin bo'limlari">
+        <ul class="flex gap-1 lg:flex-col">
+          {% for t in tabs %}
+          {% ifchanged t.group %}{% if t.group != "Asosiy" %}<li class="mb-1 mt-4 hidden px-3 text-[11.5px] font-bold uppercase tracking-wider text-muted lg:block" aria-hidden="true">{{ t.group }}</li>{% endif %}{% endifchanged %}
+          <li>
+            <a href="/admin?tab={{ t.key }}"{% if tab == t.key %} aria-current="page"{% endif %} title="{{ t.hint }}" class="flex min-h-10 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 text-[14.5px] font-semibold transition-colors {% if tab == t.key %}bg-accent text-on-accent{% else %}text-muted hover:bg-accent-soft hover:text-fg{% endif %}">
+              {% icon t.icon 18 %}
+              <span class="flex-1">{{ t.label }}</span>
+              {% if t.badge %}<span class="min-w-6 rounded-full px-2 text-center text-xs font-bold {% if tab == t.key %}bg-white/25{% else %}bg-warning-soft text-warning{% endif %}" aria-label="{{ t.badge }} ta kutmoqda">{{ t.badge }}</span>{% endif %}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </aside>
+
+    <div class="min-w-0">
+      {% if tab == "bosh" %}{% include "admin_panel/dashboard.html" %}
+      {% elif tab == "buyurtmalar" %}
+        {% include "admin_panel/section_title.html" with title="Buyurtmalar" text="PDF smeta va 3D dizayn buyurtmalari. Mijozga qo'ng'iroq qiling va holatni belgilang." %}
+        {% include "admin_panel/chips.html" %}
+        {% if items %}<ul class="grid gap-3">{% for o in items %}{% include "admin_panel/order_card.html" %}{% endfor %}</ul>{% else %}{% include "admin_panel/empty.html" with title="Buyurtma yo'q" %}{% endif %}
+      {% elif tab == "sorovlar" %}
+        {% include "admin_panel/section_title.html" with title="Mijoz so'rovlari" text="Mijozlarning ustalarga yuborgan so'rovlari. Ustalar ularni Telegram'da ham oladi." %}
+        {% include "admin_panel/chips.html" %}
+        {% if items %}<ul class="grid gap-3">{% for r in items %}{% include "admin_panel/request_card.html" %}{% endfor %}</ul>{% else %}{% include "admin_panel/empty.html" with title="So'rov yo'q" %}{% endif %}
+      {% elif tab == "ustalar" %}
+        <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 class="font-head text-2xl font-extrabold">Ustalar</h2>
+            <p class="mt-1 text-muted">Arizalarni tekshiring: tasdiqlangan ustalar saytda ko'rinadi va buyurtma oladi.</p>
+          </div>
+          <a href="/usta-bolish" target="_blank" class="btn btn-secondary btn-sm">{% icon "send" 14 %} Ustalarga yuboriladigan havola</a>
+        </div>
+        {% include "admin_panel/chips.html" %}
+        {% if items %}<ul class="grid gap-3">{% for m in items %}{% include "admin_panel/master_card.html" %}{% endfor %}</ul>{% else %}{% include "admin_panel/empty.html" with title="Bu bo'limda usta yo'q" text="Ustalar /usta-bolish sahifasidan ariza qoldiradi. Havolani tanish ustalarga yuboring." %}{% endif %}
+      {% elif tab == "dokonlar" %}{% include "admin_panel/shops.html" %}
+      {% elif tab == "yordam" %}{% include "admin_panel/support.html" %}
+      {% elif tab == "foydalanuvchilar" %}{% include "admin_panel/users.html" %}
+      {% elif tab == "tolov" %}{% include "admin_panel/payment.html" %}
+      {% elif tab == "narxlar" %}{% include "admin_panel/prices.html" %}
+      {% elif tab == "hamyon" %}{% include "admin_panel/wallet.html" %}
+      {% elif tab == "katalog" %}{% include "admin_panel/catalog.html" %}
+      {% elif tab == "hududlar" %}{% include "admin_panel/regions.html" %}
+      {% elif tab == "tizim" %}
+        {% include "admin_panel/section_title.html" with title="Tizim holati" text="Tashqi xizmatlar ulanganmi va nima qilish kerak" %}
+        {% include "admin_panel/system.html" %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

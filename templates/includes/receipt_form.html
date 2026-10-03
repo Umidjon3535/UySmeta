@@ -1,0 +1,19 @@
+{# To'lov chekini (skrinshot) yuklash. app.js: rasmni kichraytirish va ko'rsatish (data-image-picker) #}
+<form method="post" enctype="multipart/form-data" class="grid gap-3" data-image-picker data-max-side="1800" data-quality="0.9">
+  {% csrf_token %}
+  {% form_message receipt_state %}
+  <input id="receipt" name="receipt" type="file" accept="image/jpeg,image/png,image/webp" class="sr-file sr-only" data-picker-input{% if receipt_state.errors.receipt %} aria-describedby="receipt-error"{% endif %}>
+  <div class="relative overflow-hidden rounded-lg border border-line bg-bg" data-picker-preview hidden>
+    <img src="" alt="Tanlangan chek" class="mx-auto max-h-72 object-contain">
+    <button type="button" data-picker-clear class="absolute right-2 top-2 grid size-9 place-items-center rounded-full bg-gray-900/70 text-white" aria-label="Boshqa rasm tanlash">{% icon "x" 16 %}</button>
+  </div>
+  <label for="receipt" class="dropzone" data-picker-dropzone>
+    {% icon "image-plus" 24 "text-accent" %}
+    <span>
+      <strong class="block text-sm font-semibold">{% if replacing %}Boshqa chek yuklash{% else %}Chek skrinshotini tanlang{% endif %}</strong>
+      <small class="block text-[12.5px] text-muted">Ilovadagi «To'lov muvaffaqiyatli» oynasining rasmi</small>
+    </span>
+  </label>
+  <p id="receipt-error" class="field-error" role="alert" data-picker-error{% if not receipt_state.errors.receipt %} hidden{% endif %}>{{ receipt_state.errors.receipt|default:"" }}</p>
+  <button type="submit" class="btn btn-primary btn-lg btn-block" data-pending="Yuborilmoqda...">To'ladim — chekni yuborish</button>
+</form>

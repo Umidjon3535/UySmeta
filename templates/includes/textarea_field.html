@@ -1,0 +1,5 @@
+<div>
+  <label for="{{ id }}" class="label">{{ label }}</label>
+  <textarea id="{{ id }}" name="{{ name }}" class="textarea" {{ attrs }}{% if error %} aria-invalid="true" aria-describedby="{{ id }}-error"{% endif %}>{{ value }}</textarea>
+  {% if error %}<p id="{{ id }}-error" class="field-error" role="alert">{{ error }}</p>{% endif %}
+</div>

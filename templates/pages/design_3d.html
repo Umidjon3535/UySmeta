@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}3D ko'rinish · UySmeta{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-10">
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <a href="/ai-loyiha/{{ design.public_id }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-accent">{% icon "arrow-left" 16 %} Loyihaga qaytish</a>
+    <a href="/ai-loyiha/{{ design.public_id }}/pdf" class="btn btn-secondary btn-sm">{% icon "file-text" 14 %} PDF (maslahatlar bilan)</a>
+  </div>
+  <h1 class="page-title">3D ko'rinish — {{ room.label|default:"xona" }}</h1>
+  <p class="mt-1 text-muted">Pol {{ design.area|floatformat:"-1" }} m² · ship {{ design.height|floatformat:"-2" }} m. Sichqoncha yoki barmoq bilan aylantiring, g'ildirak bilan yaqinlashtiring.</p>
+
+  {# 3D sahna markazda, to'liq kenglikda; narsalar ro'yxati ostida, bosilganda ochiladi #}
+  <div class="card mt-5 overflow-hidden">
+    <div id="scene" class="h-[440px] w-full bg-bg sm:h-[640px]" role="img" aria-label="Xonaning 3D ko'rinishi"></div>
+    <p class="border-t border-line px-4 py-2 text-xs text-muted">
+      Narsalar haqiqiy o'lchamda, pol, devor va ship loyihadagi material bilan.
+      Rang, material va naqshlar — loyihadagi tanlangan variantlar (pastdagi ro'yxatda nomi bilan).
+      Raqamlar loyihadagi narx ro'yxatiga mos.
+    </p>
+  </div>
+
+  <details class="card group mt-4">
+    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 p-4 sm:px-5 [&::-webkit-details-marker]:hidden">
+      <span class="flex items-center gap-2 font-head text-lg font-bold">{% icon "sofa" 18 "text-accent" %} Xonadagi narsalar <span class="badge px-2 py-0 text-xs">{{ legend|length }} ta</span></span>
+      <span class="inline-flex items-center gap-1 text-sm font-semibold text-accent"><span class="group-open:hidden">Ko'rsatish</span><span class="hidden group-open:inline">Yashirish</span>{% icon "chevron-down" 18 "transition-transform group-open:rotate-180" %}</span>
+    </summary>
+    <ol class="grid gap-x-6 gap-y-2.5 border-t border-line p-4 text-sm sm:grid-cols-2 sm:px-5 lg:grid-cols-3">
+      {% for o in legend %}
+      <li class="flex items-start gap-2">
+        <a href="/ai-loyiha/{{ design.public_id }}#item-{{ o.n }}" class="grid size-6 flex-none place-items-center rounded-full bg-accent text-xs font-bold text-on-accent" title="Narxini ko'rish">{{ o.n }}</a>
+        <span class="mt-1 flex-none rounded-full border border-line" style="width: 14px; height: 14px; background: {{ o.color }}" title="Rang"></span>
+        <span><strong>{{ o.name }}</strong>{% if o.placement %}<br><span class="text-muted">{{ o.placement }}</span>{% endif %}</span>
+      </li>
+      {% empty %}
+      <li class="text-muted">Loyihada 3D'da ko'rsatiladigan narsa yo'q.</li>
+      {% endfor %}
+    </ol>
+  </details>
+
+  {% if tips %}
+  <section class="card mt-4 p-4 sm:px-5">
+    <h2 class="mb-2 flex items-center gap-1.5 font-bold">{% icon "lightbulb" 16 "text-accent" %} Dizayner maslahatlari</h2>
+    <ul class="list-disc pl-5 text-sm text-muted">{% for tip in tips %}<li class="mt-1">{{ tip }}</li>{% endfor %}</ul>
+  </section>
+  {% endif %}
+</div>
+{{ scene|json_script:"scene-data" }}
+{{ geometry|json_script:"geometry-data" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/RoundedBoxGeometry.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="{% asset 'js/room3d.js' %}"></script>
+<script>
+(function () {
+  "use strict";
+  const box = document.getElementById("scene");
+  if (!window.THREE || !window.Room3D) { box.textContent = "3D kutubxona yuklanmadi. Internet aloqasini tekshiring."; return; }
+  const data = JSON.parse(document.getElementById("scene-data").textContent);
+  const geometry = JSON.parse(document.getElementById("geometry-data").textContent);
+  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2563eb";
+  // Rasm o'lchangan bo'lsa — xona kengligi, chuqurligi, deraza va eshiklar real ko'rinishdagidek
+  const layout = geometry && geometry.img
+    ? Room3D.solve(geometry, geometry.img[0], geometry.img[1], data.height, data.area)
+    : Room3D.defaultLayout(data);
+  Room3D.dollhouse(box, data, layout, accent);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h2 class="font-head text-2xl font-extrabold">Assalomu alaykum, {{ current_user.first_name }}!</h2>
+    <p class="mt-1 text-muted">{{ today|uzdate }} · {% if open_tasks %}<strong class="text-warning">{{ open_tasks }} ta bo'limda ish kutmoqda</strong> — pastdagi sariq kartochkalardan boshlang.{% else %}<span class="text-success">Hamma ishlar bajarilgan.</span>{% endif %}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="/admin?tab=dokonlar" class="btn btn-secondary btn-sm">{% icon "store" 14 %} Do'kon qo'shish</a>
+    <a href="/admin?tab=narxlar" class="btn btn-secondary btn-sm">{% icon "tags" 14 %} Narxlarni o'zgartirish</a>
+    <a href="/" target="_blank" class="btn btn-ghost btn-sm">{% icon "eye" 14 %} Saytni ko'rish</a>
+  </div>
+</div>
+
+{# 1. Bajarilishi kerak — son, nima qilish kerak, qayerga o'tish #}
+<section class="mb-8" aria-labelledby="tasks-title">
+  <h3 id="tasks-title" class="mb-3 flex items-center gap-2 font-head text-lg font-bold">{% icon "check-circle2" 20 "text-accent" %} Bajarilishi kerak</h3>
+  <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    {% for t in tasks %}
+    <li>
+      <a href="{{ t.href }}" class="card flex h-full items-start gap-3 p-4 transition-colors {% if t.count %}!border-warning hover:bg-warning-soft{% else %}hover:border-accent{% endif %}">
+        <span class="grid size-10 flex-none place-items-center rounded-xl {% if t.count %}bg-warning-soft text-warning{% else %}bg-success-soft text-success{% endif %}">{% if t.count %}{% icon t.icon 20 %}{% else %}{% icon "check" 20 %}{% endif %}</span>
+        <span class="min-w-0 flex-1">
+          <span class="flex items-baseline justify-between gap-2">
+            <span class="font-semibold">{{ t.title }}</span>
+            <span class="font-head text-xl font-extrabold tabular-nums {% if t.count %}text-warning{% else %}text-muted{% endif %}">{{ t.count }}</span>
+          </span>
+          <span class="mt-0.5 block text-sm text-muted">{% if t.count %}{{ t.action }}{% if t.money %} · jami {{ t.money|money }}{% endif %}{% else %}Hozircha yo'q{% endif %}</span>
+        </span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+{# 2. Ko'rsatkichlar #}
+<section class="mb-8" aria-labelledby="kpi-title">
+  <h3 id="kpi-title" class="mb-3 flex items-center gap-2 font-head text-lg font-bold">{% icon "bar-chart3" 20 "text-accent" %} Ko'rsatkichlar</h3>
+  <ul class="grid grid-cols-2 gap-3 xl:grid-cols-3">
+    {% for k in kpis %}
+    <li>
+      {% if k.href %}<a href="{{ k.href }}" class="card flex h-full items-start gap-3 p-4 transition-colors hover:border-accent">{% else %}<div class="card flex h-full items-start gap-3 p-4">{% endif %}
+        <span class="icon-box size-10 flex-none max-sm:hidden">{% icon k.icon 18 %}</span>
+        <span class="min-w-0">
+          <span class="block text-sm text-muted">{{ k.label }}</span>
+          <strong class="block break-words font-head text-lg font-extrabold leading-tight tabular-nums sm:text-2xl">{% if k.value is None %}{{ k.money|money }}{% else %}{{ k.value }}{% endif %}</strong>
+          <span class="block text-xs text-muted">{{ k.sub }}</span>
+        </span>
+      {% if k.href %}</a>{% else %}</div>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+{# 3. Eng muhim ishlar — shu yerning o'zida bajarish mumkin #}
+{% if new_orders or pending_masters or new_requests %}
+<div class="mb-8 grid gap-6">
+  {% if pending_masters %}
+  <section>
+    {% include "admin_panel/task_head.html" with title="Tekshiruvni kutayotgan ustalar" hint="Portfolio hujjatini oching, so'ng «Tasdiqlash» yoki «Rad etish»" href="/admin?tab=ustalar" %}
+    <ul class="grid gap-3">{% for m in pending_masters %}{% include "admin_panel/master_card.html" %}{% endfor %}</ul>
+  </section>
+  {% endif %}
+  {% if new_orders %}
+  <section>
+    {% include "admin_panel/task_head.html" with title="To'lanmagan buyurtmalar" hint="Chek yuklangan bo'lsa tekshirib, «To'landi» ni bosing" href="/admin?tab=buyurtmalar" %}
+    <ul class="grid gap-3">{% for o in new_orders %}{% include "admin_panel/order_card.html" %}{% endfor %}</ul>
+  </section>
+  {% endif %}
+  {% if new_requests %}
+  <section>
+    {% include "admin_panel/task_head.html" with title="Javobsiz mijoz so'rovlari" hint="Usta bog'lanmagan bo'lsa, o'zingiz qo'ng'iroq qiling" href="/admin?tab=sorovlar" %}
+    <ul class="grid gap-3">{% for r in new_requests %}{% include "admin_panel/request_card.html" %}{% endfor %}</ul>
+  </section>
+  {% endif %}
+</div>
+{% endif %}
+
+{# 4. Qo'llanma: qaysi bo'limda nima qilinadi #}
+<section aria-labelledby="guide-title">
+  <h3 id="guide-title" class="mb-3 flex items-center gap-2 font-head text-lg font-bold">{% icon "info" 20 "text-accent" %} Bo'limlar qo'llanmasi</h3>
+  <ul class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+    {% for g in guide %}
+    <li>
+      <a href="/admin?tab={{ g.key }}" class="flex h-full items-start gap-3 rounded-[14px] border border-line p-3 transition-colors hover:border-accent hover:bg-accent-soft">
+        <span class="mt-0.5 text-accent">{% icon g.icon 18 %}</span>
+        <span><strong class="block text-sm">{{ g.label }}</strong><span class="text-sm text-muted">{{ g.hint }}</span></span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>

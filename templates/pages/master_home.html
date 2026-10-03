@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Usta kabineti · UySmeta{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="container-page py-6 md:py-10">
+  {# Sarlavha #}
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div class="min-w-0">
+      <p class="eyebrow">Usta kabineti</p>
+      <h1 class="mt-1 break-words text-[clamp(1.75rem,1.2rem+1.8vw,2.5rem)] font-extrabold leading-tight tracking-tight">Xush kelibsiz, {{ user.first_name }}!</h1>
+      <p class="mt-1.5 flex flex-wrap items-center gap-2 text-muted">
+        {{ master.specialty }} · {{ master.district }}
+        <span class="badge {{ master.status|status_badge }}">{% if master.status == "approved" %}{% icon "check-circle2" 13 %}{% else %}{% icon "clock" 13 %}{% endif %} {{ master.status|master_status }}</span>
+        {% if plan.badge %}<span class="badge badge-warning">{% icon "star" 13 "fill-star" %} {{ plan.badge }}</span>{% endif %}
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      {% if master.status == "approved" %}<a href="/ustalar/{{ master.id }}" class="btn btn-secondary">{% icon "eye" 16 %} Ommaviy sahifam</a>{% endif %}
+      <a href="/usta/portfolio" class="btn btn-primary">{% icon "image-plus" 16 %} Rasm qo'shish</a>
+    </div>
+  </div>
+
+  {% if master.status == "pending" %}
+  <p class="alert alert-info mb-6">{% icon "clock" 18 "mt-px flex-none" %}<span>Arizangiz tekshiruvda. Tasdiqlangach profilingiz ustalar ro'yxatida chiqadi va mijozlar so'rov yubora boshlaydi. Shu orada portfolioni to'ldiring.</span></p>
+  {% endif %}
+
+  {# Asosiy ko'rsatkichlar #}
+  <ul class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <li>
+      <a href="/usta/sorovlar" class="card flex h-full flex-col p-4 transition-colors hover:border-accent {% if new_count %}!border-accent{% endif %}">
+        <span class="flex items-center gap-2 text-sm text-muted">{% icon "message-square" 16 %} Yangi so'rovlar</span>
+        <strong class="mt-1 font-head text-2xl font-extrabold tabular-nums {% if new_count %}text-accent{% endif %}">{{ new_count }}</strong>
+        <span class="mt-auto text-xs text-muted">Jami {{ total_requests }} ta so'rov</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% if master.status == 'approved' %}/ustalar/{{ master.id }}#reviews-title{% else %}/profil#usta{% endif %}" class="card flex h-full flex-col p-4 transition-colors hover:border-accent">
+        <span class="flex items-center gap-2 text-sm text-muted">{% icon "star" 16 %} Reyting</span>
+        <strong class="mt-1 font-head text-2xl font-extrabold tabular-nums">{% if master.reviews_count %}★ {{ master.rating|rating }}{% else %}—{% endif %}</strong>
+        <span class="mt-auto text-xs text-muted">{{ master.reviews_count }} ta sharh</span>
+      </a>
+    </li>
+    <li>
+      <a href="/usta/portfolio" class="card flex h-full flex-col p-4 transition-colors hover:border-accent">
+        <span class="flex items-center gap-2 text-sm text-muted">{% icon "image-icon" 16 %} Portfolio</span>
+        <strong class="mt-1 font-head text-2xl font-extrabold tabular-nums">{{ portfolio_count }} <span class="text-base font-semibold text-muted">/ {{ portfolio_max }}</span></strong>
+        <span class="mt-auto text-xs text-muted">rasm</span>
+      </a>
+    </li>
+    <li>
+      <a href="/narxlar" class="card flex h-full flex-col p-4 transition-colors hover:border-accent">
+        <span class="flex items-center gap-2 text-sm text-muted">{% icon "badge-check" 16 %} Tarif</span>
+        <strong class="mt-1 truncate font-head text-2xl font-extrabold">{{ plan.title }}</strong>
+        <span class="mt-auto text-xs text-muted">{% if master.active_plan %}{{ master.plan_until|uzdate }} gacha{% else %}Tarifni oshirish →{% endif %}</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <div class="grid min-w-0 grid-cols-1 gap-6">
+      {# Oxirgi so'rovlar #}
+      <section class="card p-5 sm:p-6" aria-labelledby="req-title">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h2 id="req-title" class="flex items-center gap-2 text-lg font-extrabold">{% icon "message-square" 18 "text-accent" %} Oxirgi so'rovlar</h2>
+          {% if total_requests %}<a href="/usta/sorovlar" class="link text-sm">Barchasi →</a>{% endif %}
+        </div>
+        {% if recent_requests %}
+        <ul class="grid grid-cols-1 gap-2">
+          {% for r in recent_requests %}
+          <li class="flex flex-wrap items-center gap-3 rounded-[12px] border px-3 py-2.5 {% if r.status == 'new' %}border-accent bg-accent-soft{% else %}border-line{% endif %}">
+            <span class="avatar size-10 text-sm" aria-hidden="true">{{ r.name|initials }}</span>
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-semibold">{{ r.name }}</p>
+              <p class="truncate text-sm text-muted">{{ r.message|default:"Xabarsiz" }}</p>
+            </div>
+            <span class="badge {{ r.status|status_badge }}">{{ request_statuses|get:r.status }}</span>
+            <a href="tel:{{ r.phone }}" class="btn btn-secondary btn-sm" aria-label="{{ r.name }}ga qo'ng'iroq">{% icon "phone" 14 %}</a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="grid place-items-center gap-2 rounded-[14px] border border-dashed border-line px-6 py-10 text-center">
+          {% icon "message-square" 28 "text-muted" %}
+          <p class="font-semibold">Hozircha so'rovlar yo'q</p>
+          <p class="max-w-sm text-sm text-muted">{% if master.status == "approved" %}Portfolio va to'liq profil mijozlarni ko'proq jalb qiladi.{% else %}Ariza tasdiqlangach mijozlar so'rov yubora boshlaydi.{% endif %}</p>
+        </div>
+        {% endif %}
+      </section>
+
+      {# Portfolio ko'rinishi #}
+      <section class="card p-5 sm:p-6" aria-labelledby="pf-title">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h2 id="pf-title" class="flex items-center gap-2 text-lg font-extrabold">{% icon "image-icon" 18 "text-accent" %} Portfolio</h2>
+          <a href="/usta/portfolio" class="link text-sm">Boshqarish →</a>
+        </div>
+        {% if portfolio_preview %}
+        <ul class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {% for w in portfolio_preview %}<li class="overflow-hidden rounded-[12px] border border-line"><img src="{{ w.image|photo_url }}" alt="{{ w.title|default:'Bajarilgan ish' }}" class="aspect-square w-full object-cover" loading="lazy"></li>{% endfor %}
+        </ul>
+        {% else %}
+        <a href="/usta/portfolio" class="flex items-center gap-3 rounded-[14px] border-2 border-dashed border-line px-4 py-5 transition-colors hover:border-accent hover:bg-accent-soft">
+          <span class="text-accent">{% icon "image-plus" 26 %}</span>
+          <span><strong class="block">Birinchi ishingizni qo'shing</strong><span class="text-sm text-muted">Mijozlar ustani tanlashda birinchi rasmlarga qaraydi</span></span>
+        </a>
+        {% endif %}
+      </section>
+
+      {% if recent_reviews %}
+      <section class="card p-5 sm:p-6" aria-labelledby="rev-title">
+        <h2 id="rev-title" class="mb-4 flex items-center gap-2 text-lg font-extrabold">{% icon "star" 18 "text-accent" %} Oxirgi sharhlar</h2>
+        <ul class="grid gap-3">
+          {% for rv in recent_reviews %}
+          <li class="border-b border-line pb-3 last:border-0 last:pb-0">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <strong class="font-semibold">{{ rv.user.name }}</strong>
+              <span class="flex gap-0.5" aria-label="{{ rv.rating }} yulduz">{% for n in "12345" %}{% if forloop.counter <= rv.rating %}{% icon "star" 13 "fill-star text-star" %}{% else %}{% icon "star" 13 "text-line" %}{% endif %}{% endfor %}</span>
+            </div>
+            <p class="mt-1 text-sm text-muted">{{ rv.comment }}</p>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </div>
+
+    <aside class="grid min-w-0 grid-cols-1 gap-6 lg:sticky lg:top-[calc(var(--header-h)+16px)]">
+      {# Profil to'liqligi #}
+      <section class="card p-5 sm:p-6" aria-labelledby="check-title">
+        <h2 id="check-title" class="text-lg font-extrabold">Profilni to'ldiring</h2>
+        <div class="mt-3 flex items-center gap-3">
+          <span class="h-2 flex-1 overflow-hidden rounded-full bg-bg"><span class="block h-full rounded-full {% if checklist_percent == 100 %}bg-success{% else %}bg-accent{% endif %}" style="width: {{ checklist_percent }}%"></span></span>
+          <span class="text-sm font-semibold tabular-nums">{{ checklist_done }}/{{ checklist|length }}</span>
+        </div>
+        <ul class="mt-4 grid gap-1">
+          {% for c in checklist %}
+          <li>
+            <a href="{{ c.href }}"{% if c.external %} target="_blank" rel="noopener noreferrer"{% endif %} class="flex items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-accent-soft">
+              <span class="mt-0.5 grid size-5 flex-none place-items-center rounded-full {% if c.done %}bg-success text-white{% else %}border-2 border-line{% endif %}">{% if c.done %}{% icon "check" 12 %}{% endif %}</span>
+              <span class="min-w-0"><span class="block text-sm font-semibold {% if c.done %}text-muted line-through{% endif %}">{{ c.title }}</span>{% if not c.done %}<span class="block text-xs text-muted">{{ c.hint }}</span>{% endif %}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      <section class="card p-5 sm:p-6" aria-labelledby="money-title">
+        <h2 id="money-title" class="flex items-center gap-2 text-lg font-extrabold">{% icon "wallet" 18 "text-accent" %} Hamyon</h2>
+        <p class="mt-2 font-head text-2xl font-extrabold tabular-nums">{{ user.balance|money }}</p>
+        <div class="mt-3 grid grid-cols-2 gap-2">
+          <a href="/hamyon" class="btn btn-secondary btn-sm">Tarix</a>
+          <a href="/narxlar" class="btn btn-primary btn-sm">Tariflar</a>
+        </div>
+      </section>
+
+      <nav class="card p-2" aria-label="Sozlamalar">
+        <a href="/profil#usta" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-accent-soft">{% icon "pencil" 16 "text-accent" %} Usta ma'lumotlarini tahrirlash</a>
+        <a href="/profil" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-accent-soft">{% icon "user-round" 16 "text-accent" %} Profil va parol</a>
+        <a href="/dokonlar" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-accent-soft">{% icon "store" 16 "text-accent" %} Do'konlar va material narxlari</a>
+      </nav>
+    </aside>
+  </div>
+</div>
+{% endblock %}

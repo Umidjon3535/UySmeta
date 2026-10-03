@@ -1,0 +1,165 @@
+{% include "admin_panel/section_title.html" with title="Katalog (AI jihozlash narxlari)" text="AI loyihalar faqat shu narxlar bilan hisoblanadi. \"Taxminiy\" narxlarni bozorga qarab tekshirib, saqlang." %}
+{% form_message states.catalog %}
+
+{# Hamkor do'konlar mahsulotlari: CSV (+ ZIP rasmlar) import — core/catalog_import.py #}
+<section class="card mb-6 p-5" aria-labelledby="import-title">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div class="max-w-2xl">
+      <h3 id="import-title" class="font-bold">Hamkor do'kon mahsulotlarini import qilish</h3>
+      <p class="mt-1 text-sm text-muted">CSV fayl (Excel → «CSV UTF-8» qilib saqlang). Rasm ustunida internet manzili yoki ZIP ichidagi fayl nomi. Rasmlar fonda qayta ishlanadi: foni olib tashlanadi (real ko'rinish uchun) va asosiy rangi aniqlanadi (3D uchun).</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <form method="post">{% csrf_token %}<input type="hidden" name="_action" value="market_refresh"><button type="submit" class="btn btn-secondary btn-sm" data-pending="Boshlanmoqda...">{% icon "refresh-cw" 14 %} Narxlarni yangilash</button></form>
+      <a href="/admin?tab=katalog&amp;shablon=1" class="btn btn-secondary btn-sm">{% icon "file-text" 14 %} Namuna CSV</a>
+    </div>
+  </div>
+  <p class="mt-2 text-sm text-muted">Internetdagi do'kon narxlari: <strong class="text-fg">{{ catalog_market }}</strong> ta mahsulot{% if catalog_market_updated %}, oxirgi yangilanish {{ catalog_market_updated|uzdate }}{% endif %}. Hamkor va qo'lda kiritilgan narxlar ustun turadi.</p>
+  {% form_message states.catalog_import %}
+  {% if states.catalog_import.data.errors %}
+  <details class="mt-3 rounded-lg border border-line p-3 text-sm"{% if not states.catalog_import.ok %} open{% endif %}>
+    <summary class="cursor-pointer font-semibold">Xato qatorlar ({{ states.catalog_import.data.errors|length }})</summary>
+    <ul class="mt-2 grid gap-1 text-muted">{% for number, error in states.catalog_import.data.errors %}<li>{{ number }}-qator: {{ error }}</li>{% endfor %}</ul>
+  </details>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data" class="mt-4 flex flex-wrap items-end gap-3">
+    {% csrf_token %}
+    <input type="hidden" name="_action" value="catalog_import">
+    <label class="grid gap-1 text-sm font-semibold">CSV fayl <input type="file" name="csv" accept=".csv,text/csv" class="input py-2" required></label>
+    <label class="grid gap-1 text-sm font-semibold">Rasmlar ZIP (ixtiyoriy) <input type="file" name="zip" accept=".zip,application/zip" class="input py-2"></label>
+    <button type="submit" class="btn btn-primary" data-pending="Import qilinmoqda...">{% icon "package-check" 16 %} Import</button>
+  </form>
+  {% if catalog_images_pending %}<p class="mt-3 flex items-center gap-2 text-sm text-muted"><span class="bar-loader bar-loader-sm" aria-hidden="true"><span></span></span> {{ catalog_images_pending }} ta rasm qayta ishlanmoqda — sahifani keyinroq yangilang.</p>{% endif %}
+  {% if catalog_image_errors %}
+  <details class="mt-3 text-sm">
+    <summary class="cursor-pointer font-semibold text-danger">Rasmi yuklanmagan mahsulotlar ({{ catalog_image_errors|length }})</summary>
+    <ul class="mt-2 grid gap-1 text-muted">{% for item in catalog_image_errors %}<li>{{ item.name }} — {{ item.image_error }}</li>{% endfor %}</ul>
+  </details>
+  {% endif %}
+
+  <details class="mt-4 rounded-lg border border-line">
+    <summary class="cursor-pointer p-3 text-sm font-semibold">Turlar va mahsulotlar soni — har turda 100+ bo'lsa, «Boshqa variant» har safar boshqasini tanlaydi</summary>
+    <div class="overflow-x-auto border-t border-line">
+      <table class="w-full text-sm">
+        <thead class="text-left text-xs uppercase text-muted"><tr><th class="p-2">«tur» ustuniga</th><th class="p-2">Mahsulot</th><th class="p-2">Toifa</th><th class="w-48 p-2">Soni</th></tr></thead>
+        <tbody>
+          {% for k in catalog_kinds %}
+          <tr class="border-t border-line">
+            <td class="p-2 font-mono text-xs">{{ k.key }}</td>
+            <td class="p-2">{{ k.label }}</td>
+            <td class="p-2 text-muted">{{ k.category }}</td>
+            <td class="p-2"><div class="flex items-center gap-2"><span class="h-1.5 flex-1 overflow-hidden rounded-full bg-bg"><span class="block h-full rounded-full {% if k.percent >= 100 %}bg-success{% else %}bg-accent{% endif %}" style="width: {{ k.percent }}%"></span></span><span class="w-10 text-right tabular-nums">{{ k.count }}</span></div></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</section>
+
+{% if catalog_requests %}
+<section class="card mb-6 p-5">
+  <h3 class="font-bold">Foydalanuvchilar so'ragan, lekin bazada yo'q ({{ catalog_requests|length }})</h3>
+  <p class="mb-3 text-sm text-muted">Narxini kiritsangiz, katalogga qo'shiladi va keyingi loyihalarda hisoblanadi.</p>
+  <ul class="grid gap-3">
+    {% for r in catalog_requests %}
+    <li class="rounded-lg border border-line p-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <p class="font-semibold">{{ r.name }} <span class="font-normal text-muted">· {{ r.unit }} · {{ r.times_requested }} marta so'ralgan</span></p>
+        <form method="post">{% csrf_token %}<input type="hidden" name="_action" value="catalog_request_dismiss"><input type="hidden" name="id" value="{{ r.id }}"><button class="btn btn-ghost btn-sm">O'chirish</button></form>
+      </div>
+      <form method="post" class="mt-2 flex flex-wrap items-end gap-2">
+        {% csrf_token %}
+        <input type="hidden" name="_action" value="catalog_add">
+        <input type="hidden" name="request_id" value="{{ r.id }}">
+        <input type="hidden" name="name" value="{{ r.name }}">
+        <input type="hidden" name="unit" value="{{ r.unit }}">
+        <select name="category" class="select w-auto" aria-label="Toifa">{% for key, label in catalog_categories.items %}<option value="{{ key }}"{% if key == r.category %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <select name="quality" class="select w-auto" aria-label="Sifat"><option value="economy">Ekonom</option><option value="standard" selected>O'rta</option><option value="premium">Premium</option></select>
+        <input name="price" class="input w-40 text-right" inputmode="numeric" placeholder="Narx, so'm" aria-label="Narx, so'm" required>
+        <input name="source_url" class="input w-64" placeholder="Manba havolasi (ixtiyoriy)" aria-label="Manba havolasi">
+        <button type="submit" class="btn btn-primary btn-sm">Qo'shish</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<details class="card mb-6 p-5"{% if states.catalog.errors %} open{% endif %}>
+  <summary class="cursor-pointer list-none font-bold">+ Yangi mahsulot yoki xizmat qo'shish</summary>
+  <form method="post" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    {% csrf_token %}
+    <input type="hidden" name="_action" value="catalog_add">
+    {% field states.catalog "name" "Nomi" placeholder="Masalan: Parket taxta, dub" %}
+    {% field states.catalog "unit" "Birlik" placeholder="dona, m², metr, to'plam" %}
+    <div>
+      <label for="f-category" class="label">Toifa</label>
+      <select id="f-category" name="category" class="select">{% for key, label in catalog_categories.items %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select>
+      {% if states.catalog.errors.category %}<p class="field-error">{{ states.catalog.errors.category }}</p>{% endif %}
+    </div>
+    <div>
+      <label for="f-quality" class="label">Sifat</label>
+      <select id="f-quality" name="quality" class="select"><option value="economy">Ekonom</option><option value="standard" selected>O'rta</option><option value="premium">Premium</option></select>
+    </div>
+    {% field states.catalog "price" "Narx, so'm" inputmode="numeric" %}
+    {% field states.catalog "price_min" "Eng arzon (ixtiyoriy)" inputmode="numeric" %}
+    {% field states.catalog "price_max" "Eng qimmat (ixtiyoriy)" inputmode="numeric" %}
+    {% field states.catalog "source_name" "Manba nomi" placeholder="texnomart.uz" %}
+    {% field states.catalog "source_url" "Manba havolasi" placeholder="https://..." %}
+    <div class="sm:col-span-2 lg:col-span-3"><button type="submit" class="btn btn-primary">Qo'shish</button></div>
+  </form>
+</details>
+
+<form class="mb-4 flex flex-wrap gap-2" role="search">
+  <input type="hidden" name="tab" value="katalog">
+  <input name="q" value="{{ catalog_q }}" class="input max-w-xs" placeholder="Nomi bo'yicha qidirish" aria-label="Qidirish">
+  <select name="kategoriya" class="select w-auto" aria-label="Toifa">
+    <option value="">Barcha toifalar</option>
+    {% for key, label in catalog_categories.items %}<option value="{{ key }}"{% if key == catalog_category %} selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <select name="holat" class="select w-auto" aria-label="Holat">
+    <option value="">Barchasi ({{ catalog_total }})</option>
+    <option value="taxminiy"{% if holat == "taxminiy" %} selected{% endif %}>Taxminiy narxlar ({{ catalog_unverified }})</option>
+  </select>
+  <button class="btn btn-secondary">{% icon "search" 16 %} Ko'rsatish</button>
+</form>
+
+<div class="card table-scroll">
+  <table class="data-table min-w-[900px]">
+    <thead><tr><th></th><th>Nomi</th><th>Toifa</th><th>Narx, so'm</th><th>Oraliq</th><th>Sifat</th><th>Manba</th><th>Ishlatilgan</th><th></th></tr></thead>
+    <tbody>
+      {% for item in catalog_items %}
+      <tr>
+        <td>{% if item.image %}<img src="{{ item.image }}" alt="" loading="lazy" class="size-10 rounded object-cover">{% endif %}</td>
+        <td class="font-semibold">{{ item.name }} <span class="font-normal text-muted">/ {{ item.unit }}</span>{% if not item.verified %}<br><span class="badge badge-warning px-2 py-0 text-[11px]">taxminiy</span>{% endif %}</td>
+        <td class="text-muted">{{ item.get_category_display }}</td>
+        <td colspan="3">
+          <form method="post" class="flex flex-wrap items-center gap-1.5">
+            {% csrf_token %}
+            <input type="hidden" name="_action" value="catalog_save">
+            <input type="hidden" name="id" value="{{ item.id }}">
+            <input type="hidden" name="source_name" value="{{ item.source_name }}">
+            <input type="hidden" name="source_url" value="{{ item.source_url }}">
+            <input name="price" value="{{ item.price }}" class="input min-h-9 w-32 py-1 text-right tabular-nums" inputmode="numeric" aria-label="Narx">
+            <input name="price_min" value="{{ item.price_min|default_if_none:'' }}" class="input min-h-9 w-28 py-1 text-right" inputmode="numeric" aria-label="Eng arzon">
+            <input name="price_max" value="{{ item.price_max|default_if_none:'' }}" class="input min-h-9 w-28 py-1 text-right" inputmode="numeric" aria-label="Eng qimmat">
+            <select name="quality" class="select min-h-9 w-auto py-1 text-sm" aria-label="Sifat">
+              <option value="economy"{% if item.quality == "economy" %} selected{% endif %}>Ekonom</option>
+              <option value="standard"{% if item.quality == "standard" %} selected{% endif %}>O'rta</option>
+              <option value="premium"{% if item.quality == "premium" %} selected{% endif %}>Premium</option>
+            </select>
+            <button type="submit" class="btn btn-secondary btn-sm">{% if item.verified %}Saqlash{% else %}Tasdiqlash{% endif %}</button>
+          </form>
+        </td>
+        <td class="text-sm">{% if item.source_url %}<a class="link" href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">{{ item.source_name }}</a>{% else %}<span class="text-muted">{{ item.source_name }}</span>{% endif %}</td>
+        <td class="tabular-nums">{{ item.times_used }}</td>
+        <td>
+          <form method="post">{% csrf_token %}<input type="hidden" name="_action" value="catalog_delete"><input type="hidden" name="id" value="{{ item.id }}"><button class="btn btn-ghost btn-sm" data-confirm="«{{ item.name }}» katalogdan o'chiriladi. Davom etasizmi?">{% icon "trash2" 14 %}</button></form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" class="text-center text-muted">Hech narsa topilmadi</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

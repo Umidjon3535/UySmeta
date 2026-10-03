@@ -1,0 +1,8 @@
+<div>
+  <label for="{{ id }}" class="label">{{ label }}</label>
+  <select id="{{ id }}" name="{{ name }}" class="select" required{% if error %} aria-invalid="true" aria-describedby="{{ id }}-error"{% endif %}>
+    <option value="" disabled{% if not value %} selected{% endif %}>{{ placeholder }}</option>
+    {% for option in options %}<option value="{{ option }}"{% if option == value %} selected{% endif %}>{{ option }}</option>{% endfor %}
+  </select>
+  {% if error %}<p id="{{ id }}-error" class="field-error" role="alert">{{ error }}</p>{% endif %}
+</div>

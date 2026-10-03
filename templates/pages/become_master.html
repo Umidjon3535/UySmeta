@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Ustalar uchun · UySmeta{% endblock %}
+{% block description %}UySmeta'da usta sifatida ro'yxatdan o'ting va smeta tuzgan mijozlardan buyurtma oling.{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-12">
+  <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-12">
+    <div>
+      <p class="eyebrow">Ustalar uchun</p>
+      <h1 class="page-title mt-1">UySmeta'da buyurtma oling</h1>
+      <p class="mt-3 text-lg text-muted">Smetasi tayyor, byudjetini biladigan mijozlar sizni o'z tumanida qidiradi. Ariza qoldiring — tekshiruvdan so'ng profilingiz ustalar ro'yxatida chiqadi.</p>
+
+      <ul class="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+        {% for b in benefits %}
+        <li class="card flex gap-4 p-4">
+          <span class="icon-box flex-none">{% icon b.icon 20 %}</span>
+          <div><h2 class="font-bold">{{ b.title }}</h2><p class="text-sm text-muted">{{ b.text }}</p></div>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <h2 class="mt-10 text-lg font-extrabold">Qanday ishlaydi</h2>
+      <ol class="mt-4 grid gap-4">
+        {% for step in steps %}
+        <li class="flex gap-4">
+          <span class="grid size-9 flex-none place-items-center rounded-full bg-accent font-head font-extrabold text-on-accent">{{ forloop.counter }}</span>
+          <div class="pt-1"><p class="font-semibold">{{ step.title }}</p><p class="text-sm text-muted">{{ step.text }}</p></div>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+
+    <section class="card p-5 sm:p-7 lg:sticky lg:top-[calc(var(--header-h)+16px)]" aria-labelledby="apply-title">
+      <div class="mb-5 flex items-center gap-3">
+        <span class="icon-box flex-none">{% icon "hard-hat" 20 %}</span>
+        <div>
+          <h2 id="apply-title" class="text-xl font-extrabold">Usta arizasi</h2>
+          {% if current_user and not existing %}<p class="text-sm text-muted">{{ current_user.name }} · {{ current_user.phone|phone }}</p>{% endif %}
+        </div>
+      </div>
+      {% if not current_user %}
+      <p class="mb-5 text-muted">Ariza topshirish uchun avval hisob yarating yoki tizimga kiring.</p>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <a href="/royxat?next=/usta-bolish" class="btn btn-primary">Ro'yxatdan o'tish</a>
+        <a href="/kirish?next=/usta-bolish" class="btn btn-secondary">{% icon "log-in" 16 %} Kirish</a>
+      </div>
+      {% elif existing %}
+      {% form_message state %}
+      <div class="grid place-items-center gap-3 rounded-[14px] bg-accent-soft px-5 py-8 text-center">
+        {% icon "check-circle2" 32 "text-accent" %}
+        <p class="font-semibold">Siz allaqachon ariza yuborgansiz</p>
+        <p class="text-sm text-muted">Holati: <span class="badge {{ existing.status|status_badge }}">{{ existing.status|master_status }}</span></p>
+        <a href="/profil#usta" class="btn btn-primary mt-1">Profilga o'tish</a>
+      </div>
+      {% else %}
+      {% include "includes/master_profile_form.html" with mode="apply" form_state=state regions=master_regions defaults=apply_defaults %}
+      <p class="mt-4 flex items-start gap-2 text-xs text-muted">{% icon "info" 14 "mt-0.5 flex-none" %} Hujjatingizni faqat administrator ko'radi. Odatda 1 ish kuni ichida ko'rib chiqiladi.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

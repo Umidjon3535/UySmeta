@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block scripts %}{% if current_user %}<script src="{% asset 'js/calculator.js' %}" defer></script>{% endif %}{% endblock %}
+
+{% block content %}
+{% if not current_user %}
+{# ================= MEHMON: chapda loyiha haqida, o'ngda tizimga kirish ================= #}
+<section class="grid lg:min-h-[calc(100dvh-var(--header-h))] lg:grid-cols-2" aria-labelledby="hero-title">
+  <div class="auth-hero relative overflow-hidden px-4 py-10 sm:px-8 sm:py-14 lg:flex lg:items-center lg:justify-end lg:px-12 lg:py-16 xl:pr-20">
+    <span class="auth-hero-orb -right-28 -top-28 size-96" aria-hidden="true"></span>
+    <span class="auth-hero-orb -bottom-32 -left-32 size-80" aria-hidden="true"></span>
+    <div class="relative w-full max-w-[560px]">
+      <p class="flex items-center gap-3 font-head text-2xl font-extrabold tracking-tight">
+        <span class="grid size-11 place-items-center rounded-xl bg-white/15">{% icon "ruler" 24 %}</span> UySmeta
+      </p>
+      <h1 id="hero-title" class="mt-8 text-[clamp(2rem,1.2rem+2.6vw,3.25rem)] font-extrabold leading-[1.1] tracking-[-0.03em] lg:mt-10">
+        Ta'miringiz <span class="auth-hero-hl">qanchaga tushishini</span> 2&nbsp;daqiqada biling
+      </h1>
+      <p class="mt-5 max-w-[500px] text-base text-white/85 lg:text-lg">
+        Xona o'lchamini kiriting — material, usta haqi va ta'mir muddatini {{ place }} bozor narxlarida hisoblab beramiz. Tekshirilgan ustalar ham shu yerda.
+      </p>
+      <ul class="mt-8 flex flex-wrap gap-3">
+        {% for value, label in hero_stats %}
+        <li class="flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-3">
+          <span class="text-white/90">{% cycle "file-text" "users" "check-circle2" as stat_icon silent %}{% icon stat_icon 22 %}</span>
+          <span>
+            <strong class="block font-head text-lg font-extrabold leading-tight">{{ value }}</strong>
+            <span class="block text-[13px] text-white/80">{{ label }}</span>
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+      <ul class="mt-8 hidden gap-3 text-[15px] text-white/90 sm:grid">
+        <li class="flex items-center gap-3"><span class="size-2 rounded-full bg-white/70"></span>Mahalliy bozor narxlarida smeta</li>
+        {% if ai_enabled %}<li class="flex items-center gap-3"><span class="size-2 rounded-full bg-white/70"></span>AI bilan xona rasmini tahlil qilish</li>{% endif %}
+        <li class="flex items-center gap-3"><span class="size-2 rounded-full bg-white/70"></span>Tekshirilgan ustalar va sharhlar</li>
+        <li class="flex items-center gap-3"><span class="size-2 rounded-full bg-white/70"></span>PDF va ulashish havolasi</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="flex justify-center px-4 py-10 sm:px-8 sm:py-14 lg:items-center lg:justify-start lg:px-12 lg:py-16 xl:pl-20">
+    <div class="w-full max-w-[440px]">
+      <h2 class="font-head text-[28px] font-extrabold tracking-tight sm:text-[32px]">Tizimga kirish</h2>
+      <p class="mb-7 mt-1 text-muted">Hisobingizga kiring yoki bepul ro'yxatdan o'ting</p>
+      {% include "auth/auth_panel.html" with next="/" register_query="" %}
+    </div>
+  </div>
+</section>
+
+{% else %}
+{# ================= KABINET: salomlashuv, balans, tezkor amallar ================= #}
+<section class="pb-4 pt-7 md:pt-9" aria-labelledby="hello-title">
+  <div class="container-page">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Shaxsiy kabinet</p>
+        <h1 id="hello-title" class="mt-1 text-[clamp(1.75rem,1.2rem+1.8vw,2.5rem)] font-extrabold tracking-tight">Xush kelibsiz, {{ current_user.first_name }}!</h1>
+        <p class="mt-1 text-muted">Bugun nimani hisoblaymiz? {{ place }} bozor narxlari bilan.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="/hamyon" class="card inline-flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:border-accent">
+          {% icon "wallet" 18 "text-accent" %}
+          <span><small class="block text-xs text-muted">Balans</small><strong class="font-head tabular-nums">{{ current_user.balance|money }}</strong></span>
+        </a>
+        <a href="/narxlar" class="card inline-flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:border-accent">
+          {% icon "badge-check" 18 "text-accent" %}
+          <span><small class="block text-xs text-muted">Tarif</small><strong class="font-head">{% if current_user.plan %}{{ current_user.plan|plan_title }}{% else %}Bepul{% endif %}</strong></span>
+        </a>
+      </div>
+    </div>
+
+    <ul class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {% for action in quick_actions %}
+      <li>
+        <a href="{{ action.href }}" class="card flex h-full flex-col gap-3 p-4 transition-colors hover:border-accent sm:p-5">
+          <span class="icon-box">{% icon action.icon 20 %}</span>
+          <span>
+            <strong class="block font-head text-[17px] font-bold">{{ action.title }}</strong>
+            <small class="mt-0.5 block text-[13px] leading-snug text-muted">{{ action.text }}</small>
+          </span>
+          <span class="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-accent">{{ action.cta }} {% icon "arrow-right" 14 %}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+{# ================= KALKULYATOR; natija «Hisoblash» bosilgach pastida ochiladi ================= #}
+<section id="kalkulyator" class="scroll-mt-20 py-8" aria-labelledby="calc-title">
+  <div class="container-page grid gap-6">
+    <div class="card p-5 lg:p-7">
+      <div class="mb-5 flex items-center gap-3">
+        <span class="icon-box">{% icon "calculator" 20 %}</span>
+        <div>
+          <h2 id="calc-title" class="text-xl font-extrabold">Smeta kalkulyatori</h2>
+          <p class="text-sm text-muted">Xona turi va o'lchamlarini kiriting, «Hisoblash» ni bosing — nima kerakligi va narxi pastda chiqadi</p>
+        </div>
+      </div>
+
+      <form id="calc-form" method="post" action="/" novalidate data-calc data-calc-url="/api/hisob" class="lg:grid lg:grid-cols-2 lg:gap-x-8">
+        {% csrf_token %}
+        {# Hudud: bitta bo'lsa — belgi, bir nechta bo'lsa — tanlov #}
+        {% if regions|length > 1 %}
+        <div class="mb-[18px] lg:col-span-2">
+          <label for="region" class="label">Hudud (narxlar shu hudud bo'yicha)</label>
+          <select id="region" name="region" class="select">
+            {% for r in regions %}<option value="{{ r.key }}"{% if r.key == calc.region %} selected{% endif %}>{{ r.name }}</option>{% endfor %}
+          </select>
+        </div>
+        {% else %}
+        <input type="hidden" name="region" value="{{ calc.region }}">
+        <p class="mb-[18px] inline-flex items-center lg:col-span-2 lg:justify-self-start gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-[13px] font-semibold text-accent">{% icon "map-pin" 14 %} {{ regions.0.name }} narxlarida</p>
+        {% endif %}
+
+        <fieldset class="mb-[18px] lg:row-span-2">
+          <legend class="label mb-2">Xona turi</legend>
+          <div class="grid grid-cols-2 gap-2">
+            {% for room in room_types %}
+            <div class="choice">
+              <input type="radio" name="roomType" id="room-{{ room.key }}" value="{{ room.key }}"{% if room.key == calc.roomType %} checked{% endif %}>
+              <label for="room-{{ room.key }}" class="choice-card max-[400px]:gap-2 max-[400px]:text-[13.5px]">{% icon room.icon 20 %} {{ room.label }}</label>
+            </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <fieldset class="mb-[18px]">
+          <legend class="label mb-2" data-dims-legend>{% if calc.roomType == "apartment" %}Kvartira maydoni{% else %}Xona o'lchamlari{% endif %}</legend>
+          <div class="grid grid-cols-3 gap-2 sm:gap-2.5" data-dims="room"{% if calc.roomType == "apartment" %} hidden{% endif %}>
+            {% include "includes/dim_input.html" with name="length" label="Uzunlik" unit="m" value=calc.length %}
+            {% include "includes/dim_input.html" with name="width" label="Eni" unit="m" value=calc.width %}
+            {% include "includes/dim_input.html" with name="height" label="Balandlik" unit="m" value=calc.height %}
+          </div>
+          <div class="grid grid-cols-1 gap-2 sm:gap-2.5" data-dims="apartment"{% if calc.roomType != "apartment" %} hidden{% endif %}>
+            {% include "includes/dim_input.html" with name="area" label="Umumiy maydon" unit="m²" value=calc.area %}
+          </div>
+        </fieldset>
+
+        <fieldset class="mb-[18px]">
+          <legend class="label mb-2">Sifat darajasi</legend>
+          <div class="segmented">
+            {% for q in qualities %}
+            <div class="choice">
+              <input type="radio" name="quality" id="q-{{ q.key }}" value="{{ q.key }}"{% if q.key == calc.quality %} checked{% endif %}>
+              <label for="q-{{ q.key }}" class="segment">{{ q.label }}</label>
+            </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <button type="button" class="btn btn-primary btn-lg btn-block lg:col-span-2" data-calc-run>{% icon "calculator" 16 %} Hisoblash</button>
+      </form>
+    </div>
+
+    {# Saqlashda xato bo'lsa (forma qiymatlari qaytgan) natija darhol ko'rinadi #}
+    <div id="natija" class="scroll-mt-20" aria-label="Smeta natijasi"{% if not state.values %} hidden{% endif %}>
+      <article class="card animate-result p-4 sm:p-7" aria-live="polite" data-result>
+      <div data-result-body>
+        {% include "includes/estimate_view.html" with result=result sample=is_sample label=result_label %}
+      </div>
+      <div class="no-print mt-5 flex flex-wrap gap-3">
+        <div class="w-full rounded-[14px] border border-line bg-bg p-4 sm:p-5">
+          <p class="font-head text-base font-bold">Keyingi qadam</p>
+          <p class="mt-1 text-sm text-muted">Smetani saqlang — alohida sahifa, ulashish havolasi va PDF olasiz. Uni ustaga, do'konga yoki oilangizga yuborishingiz mumkin.</p>
+          <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+            <div class="sm:min-w-72 sm:flex-1">
+              <label for="estimate-title" class="sr-only">Smeta nomi (ixtiyoriy)</label>
+              <input id="estimate-title" name="title" form="calc-form" class="input" placeholder="Nomi (ixtiyoriy): masalan, Yunusobod — vannaxona" maxlength="80" value="{{ calc.title }}">
+            </div>
+            <button type="submit" form="calc-form" class="btn btn-primary btn-lg" data-pending="Saqlanmoqda...">{% icon "save" 16 %} Smetani saqlash</button>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2 border-t border-line pt-3">
+            <button type="button" class="btn btn-ghost btn-sm" data-copy="{{ result_text }}" data-copy-label="Matn sifatida nusxalash" data-result-copy>{% icon "copy" 16 %}<span aria-live="polite">Matn sifatida nusxalash</span></button>
+            <a href="/ustalar" class="btn btn-ghost btn-sm">{% icon "search" 16 %} Shu ish uchun usta topish</a>
+          </div>
+        </div>
+      </div>
+      {% if state.message and not state.ok %}<p class="alert alert-error mt-4" role="alert">{{ state.message }}</p>{% endif %}
+      </article>
+    </div>
+  </div>
+</section>
+
+{# ================= OXIRGI SMETALAR VA LOYIHALAR ================= #}
+<section class="pb-12 pt-4" aria-label="Oxirgi ishlaringiz">
+  <div class="container-page grid gap-6 md:grid-cols-2">
+    <div>
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h2 class="text-xl font-extrabold">Oxirgi smetalar</h2>
+        {% if recent_estimates %}<a href="/smetalar" class="link text-sm font-semibold">Hammasi</a>{% endif %}
+      </div>
+      {% if recent_estimates %}
+      <ul class="grid gap-2.5">
+        {% for e in recent_estimates %}
+        <li>
+          <a href="/smeta/{{ e.public_id }}" class="card flex items-center gap-3 p-4 transition-colors hover:border-accent">
+            <span class="icon-box">{% icon "file-text" 18 %}</span>
+            <span class="min-w-0 flex-1">
+              <strong class="block truncate font-semibold">{{ e.title|default:e.result.roomType|room_label }}</strong>
+              <small class="block truncate text-[13px] text-muted">{{ e.result.quality|quality_label }} · {{ e.created_at|uzdate }}</small>
+            </span>
+            <strong class="whitespace-nowrap font-head tabular-nums">{{ e.total|money }}</strong>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="card flex items-center gap-3 p-5 text-muted">{% icon "file-text" 20 "flex-none" %} Hali saqlangan smeta yo'q. Yuqorida hisoblang va «Smetani saqlash» ni bosing.</div>
+      {% endif %}
+    </div>
+    <div>
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h2 class="text-xl font-extrabold">Oxirgi loyihalar</h2>
+        {% if recent_designs %}<a href="/ai-loyiha" class="link text-sm font-semibold">Hammasi</a>{% endif %}
+      </div>
+      {% if recent_designs %}
+      <ul class="grid gap-2.5">
+        {% for d in recent_designs %}
+        <li>
+          <a href="/ai-loyiha/{{ d.public_id }}" class="card flex items-center gap-3 p-4 transition-colors hover:border-accent">
+            <img src="{{ d.photo|photo_url }}" alt="" class="size-11 flex-none rounded-lg object-cover">
+            <span class="min-w-0 flex-1">
+              <strong class="block truncate font-semibold">{{ d.area|floatformat:"-1" }} m² · {{ d.budget|quality_label }}</strong>
+              <small class="block truncate text-[13px] text-muted">{{ d.created_at|uzdate }}{% if d.status == "processing" %} · tayyorlanmoqda{% elif d.status == "failed" %} · xato{% endif %}</small>
+            </span>
+            {% if d.status == "done" %}<strong class="whitespace-nowrap font-head tabular-nums">{{ d.total|money }}</strong>{% endif %}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <a href="/ai-loyiha" class="card flex items-center gap-3 p-5 text-muted transition-colors hover:border-accent">{% icon "sofa" 20 "flex-none" %} Xona rasmini yuklab, birinchi loyihangizni yarating</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if not current_user %}
+{# Qanday ishlaydi #}
+<section id="qanday" class="scroll-mt-20 border-y border-line bg-card py-12 md:py-14 lg:py-[72px]" aria-labelledby="how-title">
+  <div class="container-page">
+    <div class="section-head center">
+      <p class="eyebrow">Qanday ishlaydi</p>
+      <h2 id="how-title" class="section-title">Uch qadamda tayyor smeta</h2>
+      <p class="section-lead">Qurilish bozorini aylanib chiqish shart emas — hammasi bir joyda.</p>
+    </div>
+    <ol class="grid gap-5 md:grid-cols-3">
+      {% for step in steps %}
+      <li class="card relative bg-bg p-6">
+        <span class="absolute right-[22px] top-5 font-head text-[40px] font-extrabold leading-none text-line" aria-hidden="true">0{{ forloop.counter }}</span>
+        <span class="icon-box">{% icon step.icon 20 %}</span>
+        <h3 class="mt-[18px] text-[19px] font-bold">{{ step.title }}</h3>
+        <p class="mt-1.5 text-muted">{{ step.text }}</p>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+{% endif %}
+
+{# Ustalar #}
+<section id="ustalar" class="scroll-mt-20 py-12 md:py-14 lg:py-[72px]" aria-labelledby="masters-title">
+  <div class="container-page">
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div class="max-w-[640px]">
+        <p class="eyebrow">Ustalar</p>
+        <h2 id="masters-title" class="section-title">Tekshirilgan ustalar</h2>
+        <p class="section-lead">Har bir usta hujjatlari va oldingi ishlari bo'yicha tekshiruvdan o'tgan.</p>
+      </div>
+      <a href="/ustalar" class="btn btn-secondary">Barcha ustalar {% icon "arrow-right" 16 %}</a>
+    </div>
+    {% if masters %}
+    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {% for master in masters %}{% include "includes/master_card.html" %}{% endfor %}
+    </ul>
+    {% else %}
+    <div class="card flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center">
+      <span class="icon-box">{% icon "users" 20 %}</span>
+      <div class="flex-1">
+        <p class="font-head text-lg font-bold">Ustalar ro'yxati shakllanmoqda</p>
+        <p class="mt-1 text-muted">Hozir ustalarni tekshiruvdan o'tkazyapmiz. Siz usta bo'lsangiz — ariza qoldiring va birinchilardan bo'lib buyurtma oling.</p>
+      </div>
+      <a href="/usta-bolish" class="btn btn-primary">Usta sifatida qo'shilish</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if not current_user %}
+{# Narxlar #}
+<section id="narxlar" class="scroll-mt-20 border-y border-line bg-card py-12 md:py-14 lg:py-[72px]" aria-labelledby="plans-title">
+  <div class="container-page">
+    <div class="section-head center">
+      <p class="eyebrow">Narxlar</p>
+      <h2 id="plans-title" class="section-title">O'zingizga mos tarifni tanlang</h2>
+      <p class="section-lead">Oddiy smeta har doim bepul. Batafsilroq kerak bo'lsa — qo'shimcha xizmatlar.</p>
+    </div>
+    {% include "includes/plans.html" %}
+  </div>
+</section>
+
+{# FAQ #}
+<section id="savollar" class="scroll-mt-20 py-12 md:py-14 lg:py-[72px]" aria-labelledby="faq-title">
+  <div class="container-page">
+    <div class="section-head center">
+      <p class="eyebrow">Savollar</p>
+      <h2 id="faq-title" class="section-title">Ko'p so'raladigan savollar</h2>
+    </div>
+    {% include "includes/faq.html" %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

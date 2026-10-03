@@ -1,0 +1,59 @@
+{% include "admin_panel/section_title.html" with title="Hamyon va pul yechish" text="Foydalanuvchilar balansi va pul yechish so'rovlari. Kartaga o'tkazganingizdan keyin «O'tkazildi» ni bosing; rad etilsa pul balansga qaytadi." %}
+
+<ul class="mb-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+  <li class="card p-4"><span class="block text-sm text-muted">Berilgan bonuslar</span><strong class="font-head text-xl tabular-nums">{{ wallet_totals.bonus|money }}</strong></li>
+  <li class="card p-4"><span class="block text-sm text-muted">Tariflarga sarflangan</span><strong class="font-head text-xl tabular-nums">{{ wallet_totals.purchase|money }}</strong></li>
+  <li class="card p-4"><span class="block text-sm text-muted">Yechishni kutmoqda</span><strong class="font-head text-xl tabular-nums text-warning">{{ pending_sum|money }}</strong></li>
+  <li class="card p-4"><span class="block text-sm text-muted">Barcha balanslar jami</span><strong class="font-head text-xl tabular-nums">{{ wallet_balance_sum|money }}</strong></li>
+</ul>
+
+{% include "admin_panel/chips.html" %}
+{% if withdrawals %}
+<ul class="grid gap-3">
+  {% for w in withdrawals %}
+  <li class="card p-4">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="min-w-0 flex-1 basis-64">
+        <p class="flex flex-wrap items-center gap-2 font-semibold">
+          #{{ w.id }} · {{ w.amount|money }}
+          <span class="badge {% if w.status == 'done' %}badge-success{% elif w.status == 'rejected' %}badge-danger{% else %}badge-warning{% endif %} px-2.5 py-0.5 text-xs">{{ w.get_status_display }}</span>
+        </p>
+        <p class="mt-0.5 text-sm text-muted">{{ w.user.name }} · {{ w.created_at|date:"d.m.Y H:i" }}{% if w.processed_at %} · ko'rildi {{ w.processed_at|date:"d.m.Y H:i" }}{% endif %}</p>
+        <p class="mt-1.5 font-mono text-lg tracking-wider">{{ w.card_number|card }} <span class="font-sans text-sm text-muted">{{ w.card_holder }}</span></p>
+        {% if w.note %}<p class="mt-1 text-sm">💬 {{ w.note }}</p>{% endif %}
+      </div>
+      {% include "admin_panel/phone_actions.html" with phone_number=w.user.phone %}
+    </div>
+    {% if w.status == "pending" %}
+    <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+      <button type="button" class="btn btn-ghost btn-sm" data-copy="{{ w.card_number }}" data-copy-label="Karta raqamini nusxalash">{% icon "copy" 14 %}<span aria-live="polite">Karta raqamini nusxalash</span></button>
+      <form method="post">{% csrf_token %}<input type="hidden" name="_action" value="withdraw_done"><input type="hidden" name="id" value="{{ w.id }}"><button class="btn btn-primary btn-sm" data-confirm="{{ w.amount|money }} kartaga o'tkazildimi?">O'tkazildi</button></form>
+      <form method="post" class="flex flex-wrap gap-2">{% csrf_token %}<input type="hidden" name="_action" value="withdraw_reject"><input type="hidden" name="id" value="{{ w.id }}"><input name="note" class="input min-h-9 w-56 py-1 text-sm" placeholder="Rad etish sababi" aria-label="Rad etish sababi"><button class="btn btn-danger btn-sm" data-confirm="So'rov rad etiladi va pul balansga qaytariladi. Davom etasizmi?">Rad etish</button></form>
+    </div>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+{% include "admin_panel/empty.html" with title="So'rov yo'q" %}
+{% endif %}
+
+<h3 class="mb-3 mt-8 font-head text-lg font-bold">Oxirgi amallar</h3>
+<div class="card table-scroll">
+  <table class="data-table min-w-[640px]">
+    <thead><tr><th>Sana</th><th>Foydalanuvchi</th><th>Amal</th><th class="text-right">Summa</th><th class="text-right">Qoldiq</th></tr></thead>
+    <tbody>
+      {% for t in recent_transactions %}
+      <tr>
+        <td class="whitespace-nowrap text-muted">{{ t.created_at|date:"d.m.Y H:i" }}</td>
+        <td>{{ t.user.name }}<br><span class="text-muted">{{ t.user.phone|phone }}</span></td>
+        <td>{{ t.description|default:t.get_kind_display }}</td>
+        <td class="whitespace-nowrap text-right tabular-nums {% if t.amount > 0 %}text-success{% else %}text-danger{% endif %}">{% if t.amount > 0 %}+{% endif %}{{ t.amount|money }}</td>
+        <td class="whitespace-nowrap text-right tabular-nums">{{ t.balance_after|money }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-center text-muted">Hali amallar yo'q</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

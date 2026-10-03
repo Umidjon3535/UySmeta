@@ -1,0 +1,35 @@
+{% load static %}{% comment %}
+"Ilovani telefonga o'rnatish" taklifi (static/js/pwa.js). Android/Chrome — bir tugma; iPhone — yo'riqnoma.
+Telefonda sarlavha ostida (pastda yordam chati turadi), kompyuterda chap pastda. Yopilsa — 7 kun ko'rinmaydi.
+{% endcomment %}
+<div class="no-print fixed left-4 right-4 top-[calc(var(--header-h)+10px)] z-[65] md:bottom-6 md:left-6 md:right-auto md:top-auto md:w-[380px]" data-install-banner hidden>
+  <div class="support-pop flex items-center gap-3 rounded-[18px] border border-line bg-card p-3 shadow-xl">
+    <img src="{% static 'pwa/icon-192.png' %}" alt="" width="44" height="44" class="size-11 flex-none rounded-xl">
+    <div class="min-w-0 flex-1">
+      <p class="truncate text-sm font-bold">UySmeta ilovasi</p>
+      <p class="text-xs text-muted">Telefoningizga o'rnating — bir bosishda oching</p>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm flex-none" data-install>O'rnatish</button>
+    <button type="button" class="grid size-8 flex-none place-items-center rounded-full text-muted hover:bg-accent-soft hover:text-fg" data-install-dismiss aria-label="Yopish">{% icon "x" 16 %}</button>
+  </div>
+</div>
+
+{# iPhone/iPad (Safari) — o'rnatish tugmasi yo'q, qo'lda: Ulashish → Bosh ekranga qo'shish #}
+<dialog class="m-auto w-[min(400px,calc(100vw-32px))] rounded-[18px] bg-card p-0 text-fg backdrop:bg-black/70" data-install-help aria-labelledby="install-help-title">
+  <div class="grid gap-4 p-5">
+    <div class="flex items-center gap-3">
+      <img src="{% static 'pwa/icon-192.png' %}" alt="" width="48" height="48" class="size-12 rounded-xl">
+      <h2 id="install-help-title" class="font-head text-lg font-extrabold">UySmeta'ni telefonga o'rnatish</h2>
+    </div>
+    <ol class="grid gap-3 text-[15px]" data-install-steps="ios">
+      <li class="flex gap-3"><span class="grid size-6 flex-none place-items-center rounded-full bg-accent-soft text-sm font-bold text-accent">1</span><span>Pastdagi <strong>«Ulashish»</strong> tugmasini bosing <span aria-hidden="true">(□ va ↑ belgisi)</span></span></li>
+      <li class="flex gap-3"><span class="grid size-6 flex-none place-items-center rounded-full bg-accent-soft text-sm font-bold text-accent">2</span><span>Ro'yxatdan <strong>«Bosh ekranga qo'shish»</strong> («На экран Домой») ni tanlang</span></li>
+      <li class="flex gap-3"><span class="grid size-6 flex-none place-items-center rounded-full bg-accent-soft text-sm font-bold text-accent">3</span><span><strong>«Qo'shish»</strong> ni bosing — UySmeta ikonkasi telefoningizda paydo bo'ladi</span></li>
+    </ol>
+    <ol class="grid gap-3 text-[15px]" data-install-steps="other" hidden>
+      <li class="flex gap-3"><span class="grid size-6 flex-none place-items-center rounded-full bg-accent-soft text-sm font-bold text-accent">1</span><span>Brauzer menyusini oching <span aria-hidden="true">(⋮ yoki ☰)</span></span></li>
+      <li class="flex gap-3"><span class="grid size-6 flex-none place-items-center rounded-full bg-accent-soft text-sm font-bold text-accent">2</span><span><strong>«Ilovani o'rnatish»</strong> yoki <strong>«Bosh ekranga qo'shish»</strong> ni tanlang</span></li>
+    </ol>
+    <form method="dialog"><button class="btn btn-secondary btn-block">Tushunarli</button></form>
+  </div>
+</dialog>

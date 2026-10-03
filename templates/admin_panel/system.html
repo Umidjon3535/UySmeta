@@ -1,0 +1,88 @@
+{# Admin: tashqi xizmatlar ulanganmi va nima qilish kerakligi #}
+<ul class="card px-5">
+  <li class="flex gap-3 border-b border-line py-4 last:border-0">
+    <span class="mt-0.5 flex-none">{% if database_url or not is_prod %}{% icon "check-circle2" 20 "text-success" "ulangan" %}{% else %}{% icon "circle-alert" 20 "text-warning" "diqqat" %}{% endif %}</span>
+    <div class="min-w-0 flex-1">
+      <h3 class="font-bold">Ma'lumotlar bazasi</h3>
+      <div class="mt-1 grid gap-2 text-sm text-muted">
+        {% if database_url %}<p>PostgreSQL ulangan (<code class="code">DATABASE_URL</code>).</p>
+        {% else %}<p>Lokal SQLite (<code class="code">./data/uysmeta.sqlite3</code>). Internetda ishlatish uchun PostgreSQL (masalan, Neon) ulang — <code class="code">DATABASE_URL</code>.</p>{% endif %}
+      </div>
+    </div>
+  </li>
+
+  <li class="flex gap-3 border-b border-line py-4 last:border-0">
+    <span class="mt-0.5 flex-none">{% icon "check-circle2" 20 "text-success" "ulangan" %}</span>
+    <div class="min-w-0 flex-1">
+      <h3 class="font-bold">Rasmlar ombori</h3>
+      <div class="mt-1 grid gap-2 text-sm text-muted">
+        <p>Rasmlar diskka saqlanmoqda: <code class="code">{{ upload_dir }}</code>. Serverda bu papka doimiy (volume) bo'lishi kerak.</p>
+      </div>
+    </div>
+  </li>
+
+  <li class="flex gap-3 border-b border-line py-4 last:border-0">
+    <span class="mt-0.5 flex-none">{% if not telegram %}{% icon "circle-dashed" 20 "text-muted" "ulanmagan" %}{% elif webhook_ok %}{% icon "check-circle2" 20 "text-success" "ulangan" %}{% else %}{% icon "circle-alert" 20 "text-warning" "diqqat" %}{% endif %}</span>
+    <div class="min-w-0 flex-1">
+      <h3 class="font-bold">Telegram bot (kodlar va bildirishnomalar)</h3>
+      <div class="mt-1 grid gap-2 text-sm text-muted">
+        {% if not telegram %}
+        <p>Ulanmagan. Telegram'da <code class="code">@BotFather</code> ga <code class="code">/newbot</code> yozib bot oching, so'ng <code class="code">TELEGRAM_BOT_TOKEN</code> va <code class="code">TELEGRAM_BOT_USERNAME</code> ni kiriting.</p>
+        {% else %}
+        <p>Bot: <a class="link" href="{{ bot_link }}" target="_blank" rel="noopener noreferrer">@{{ bot_username }}</a>{% if webhook_ok %} — saytga ulangan.{% else %} — webhook ulanmagan.{% endif %}</p>
+        {% if webhook.last_error_message %}<p class="text-danger">Oxirgi xato: {{ webhook.last_error_message }}</p>{% endif %}
+        {% if not webhook_ok %}
+        <form method="post" class="grid gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="_action" value="connect_telegram">
+          {% form_message states.telegram %}
+          <button type="submit" class="btn btn-primary btn-sm justify-self-start" data-pending="Ulanmoqda...">Botni saytga ulash</button>
+        </form>
+        {% endif %}
+        {% if webhook_ok and webhook.pending_update_count %}<p>Navbatda: {{ webhook.pending_update_count }} ta xabar</p>{% endif %}
+        <p>Kodlarni olish yoki so'rovlar haqida xabar olish uchun admin ham bir marta botda raqamini tasdiqlashi kerak (parolni tiklash orqali).</p>
+        {% endif %}
+      </div>
+    </div>
+  </li>
+
+  <li class="flex gap-3 border-b border-line py-4 last:border-0">
+    <span class="mt-0.5 flex-none">{% if sms %}{% icon "check-circle2" 20 "text-success" "ulangan" %}{% else %}{% icon "circle-dashed" 20 "text-muted" "ulanmagan" %}{% endif %}</span>
+    <div class="min-w-0 flex-1">
+      <h3 class="font-bold">SMS (Eskiz.uz)</h3>
+      <div class="mt-1 grid gap-2 text-sm text-muted">
+        {% if sms %}<p>Ulangan — foydalanuvchilar SMS orqali ham kod olishi mumkin.</p>
+        {% else %}<p>Ulanmagan (ixtiyoriy). Eskiz bilan shartnoma qilganda <code class="code">ESKIZ_EMAIL</code> va <code class="code">ESKIZ_PASSWORD</code> ni kiriting.</p>{% endif %}
+      </div>
+    </div>
+  </li>
+
+  <li class="flex gap-3 border-b border-line py-4 last:border-0">
+    <span class="mt-0.5 flex-none">{% if ai %}{% icon "check-circle2" 20 "text-success" "ulangan" %}{% else %}{% icon "circle-dashed" 20 "text-muted" "ulanmagan" %}{% endif %}</span>
+    <div class="min-w-0 flex-1">
+      <h3 class="font-bold">AI rasm tahlili</h3>
+      <div class="mt-1 grid gap-2 text-sm text-muted">
+        {% if ai %}<p>Ulangan: {{ ai_provider }}.</p>
+        {% else %}<p>Ulanmagan. Bepul variant: <a class="link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> dan kalit olib, <code class="code">GEMINI_API_KEY</code> ga yozing.</p>{% endif %}
+      </div>
+    </div>
+  </li>
+
+  <li class="flex gap-3 border-b border-line py-4 last:border-0">
+    <span class="mt-0.5 flex-none">{% if site_https %}{% icon "check-circle2" 20 "text-success" "ulangan" %}{% elif is_prod %}{% icon "circle-alert" 20 "text-warning" "diqqat" %}{% else %}{% icon "circle-dashed" 20 "text-muted" "ulanmagan" %}{% endif %}</span>
+    <div class="min-w-0 flex-1">
+      <h3 class="font-bold">Sayt manzili</h3>
+      <div class="mt-1 grid gap-2 text-sm text-muted"><p><code class="code">{{ SITE_URL }}</code> — sitemap, ulashish havolalari va Telegram webhook shu manzildan foydalanadi.</p></div>
+    </div>
+  </li>
+
+  {% if demo_data %}
+  <li class="flex gap-3 border-b border-line py-4 last:border-0">
+    <span class="mt-0.5 flex-none">{% icon "circle-alert" 20 "text-warning" "diqqat" %}</span>
+    <div class="min-w-0 flex-1">
+      <h3 class="font-bold">Namuna ustalar</h3>
+      <div class="mt-1 grid gap-2 text-sm text-muted"><p>Bazada namuna ustalar bor. Haqiqiy ishga tushirishda <code class="code">SEED_DEMO_DATA=false</code> qiling va ularni «Ustalar» bo'limida bloklang.</p></div>
+    </div>
+  </li>
+  {% endif %}
+</ul>

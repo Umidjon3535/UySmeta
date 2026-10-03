@@ -1,0 +1,8 @@
+<div>
+  <label for="{{ id }}" class="label">{{ label }}</label>
+  <div class="phone-input">
+    <span class="prefix" aria-hidden="true">+998</span>
+    <input id="{{ id }}" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="Telefon raqam" class="input" data-phone-codes="{{ codes }}" value="{{ value }}"{% if required %} required{% endif %}{% if error %} aria-invalid="true" aria-describedby="{{ id }}-error"{% elif hint %} aria-describedby="{{ id }}-hint"{% endif %}>
+  </div>
+  {% if error %}<p id="{{ id }}-error" class="field-error" role="alert">{{ error }}</p>{% elif hint %}<p id="{{ id }}-hint" class="hint">{{ hint }}</p>{% endif %}
+</div>

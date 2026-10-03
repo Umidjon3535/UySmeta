@@ -1,0 +1,114 @@
+{% include "admin_panel/section_title.html" with title="Do'konlar" text="Saytdagi /dokonlar katalogi. Qo'shilgan va «Saytda ko'rinsin» belgilangan do'konlarni mijozlar ko'radi." %}
+<datalist id="product-units"><option value="dona"><option value="m²"><option value="metr"><option value="qop"><option value="chelak"><option value="rulon"><option value="to'plam"><option value="kg"><option value="litr"></datalist>
+<datalist id="shop-districts">{% for d in shop_districts %}<option value="{{ d }}">{% endfor %}</datalist>
+
+<details class="card mb-6"{% if new_shop_open or not shops_total %} open{% endif %}>
+  <summary class="flex cursor-pointer list-none items-center gap-2 p-5 font-bold">{% icon "store" 18 "text-accent" %} Yangi do'kon qo'shish</summary>
+  <div class="border-t border-line p-5">
+    {% include "admin_panel/shop_form.html" with fs=new_shop_form uid="new-shop" %}
+  </div>
+</details>
+
+<form class="mb-4 flex flex-wrap items-center gap-2" role="search">
+  <input type="hidden" name="tab" value="dokonlar">
+  <input name="q" value="{{ shop_q }}" class="input max-w-xs" placeholder="Nomi, tumani yoki telefoni" aria-label="Do'kon qidirish">
+  <button type="submit" class="btn btn-secondary">{% icon "search" 16 %} Qidirish</button>
+  <span class="text-sm text-muted">Jami: {{ shops_total }}</span>
+</form>
+
+{% if shop_rows %}
+<ul class="grid gap-3">
+  {% for row in shop_rows %}
+  {% with s=row.shop %}
+  <li class="card scroll-mt-24" id="shop-{{ s.id }}">
+    <div class="flex flex-wrap items-center gap-3 p-4">
+      {% if s.logo %}<img src="{{ s.logo|photo_url }}" alt="" class="size-11 flex-none rounded-lg object-cover">{% else %}<span class="icon-box flex-none">{% icon "store" 20 %}</span>{% endif %}
+      <div class="min-w-0 flex-1">
+        <p class="font-bold">{{ s.name }} {% if not s.is_active %}<span class="badge badge-warning ml-1 text-[12px]">Yashirin</span>{% endif %}</p>
+        <p class="truncate text-sm text-muted">{{ s.district|default:"—" }}{% if s.phone %} · {{ s.phone|phone }}{% endif %}</p>
+      </div>
+      {% if s.is_active %}<a href="/dokonlar/{{ s.id }}" target="_blank" class="btn btn-ghost btn-sm">{% icon "eye" 14 %} Ko'rish</a>{% endif %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="_action" value="shop_delete"><input type="hidden" name="id" value="{{ s.id }}">
+        <button type="submit" class="btn btn-ghost btn-sm text-danger" data-confirm="«{{ s.name }}» o'chirilsinmi?">{% icon "trash2" 14 %} O'chirish</button>
+      </form>
+    </div>
+    <details class="border-t border-line"{% if row.open %} open{% endif %}>
+      <summary class="cursor-pointer list-none px-4 py-2.5 text-sm font-semibold text-accent">{% icon "pencil" 14 "inline" %} Tahrirlash</summary>
+      <div class="border-t border-line p-4">
+        {% include "admin_panel/shop_form.html" with fs=row.form shop_id=s.id uid="shop-" %}
+      </div>
+    </details>
+    <details class="border-t border-line"{% if row.products_open %} open{% endif %}>
+      <summary class="cursor-pointer list-none px-4 py-2.5 text-sm font-semibold text-accent">{% icon "package-check" 14 "inline" %} Mahsulotlar ({{ row.products|length }})</summary>
+      <div class="grid gap-4 border-t border-line p-4">
+        {% with pf=row.product_form %}
+        <form method="post" enctype="multipart/form-data" class="grid gap-3 rounded-[14px] border border-dashed border-line p-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_0.8fr_1.2fr_1.4fr_auto] lg:items-end" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="_action" value="product_add"><input type="hidden" name="shop" value="{{ s.id }}">
+          <div>
+            <label for="p{{ s.id }}-name" class="label-sm">Mahsulot nomi</label>
+            <input id="p{{ s.id }}-name" name="name" class="input" maxlength="120" placeholder="Laminat 33-klass, 10 mm" value="{{ pf.values.name|default:'' }}"{% if pf.errors.name %} aria-invalid="true"{% endif %}>
+            {% if pf.errors.name %}<p class="field-error" role="alert">{{ pf.errors.name }}</p>{% endif %}
+          </div>
+          <div>
+            <label for="p{{ s.id }}-price" class="label-sm">Narx (so'm)</label>
+            <input id="p{{ s.id }}-price" name="price" class="input" inputmode="numeric" placeholder="150000" value="{{ pf.values.price|default:'' }}"{% if pf.errors.price %} aria-invalid="true"{% endif %}>
+            {% if pf.errors.price %}<p class="field-error" role="alert">{{ pf.errors.price }}</p>{% endif %}
+          </div>
+          <div>
+            <label for="p{{ s.id }}-unit" class="label-sm">Birlik</label>
+            <input id="p{{ s.id }}-unit" name="unit" class="input" maxlength="20" list="product-units" value="{{ pf.values.unit|default:'dona' }}">
+          </div>
+          <div>
+            <label for="p{{ s.id }}-cat" class="label-sm">Toifa</label>
+            <select id="p{{ s.id }}-cat" name="category" class="select">
+              {% for key, label in shop_categories.items %}<option value="{{ key }}"{% if key == pf.values.category %} selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="p{{ s.id }}-img" class="label-sm">Rasm</label>
+            <input id="p{{ s.id }}-img" name="image" type="file" accept="image/jpeg,image/png,image/webp" class="input py-2">
+            {% if pf.errors.image %}<p class="field-error" role="alert">{{ pf.errors.image }}</p>{% endif %}
+          </div>
+          <div class="flex items-center gap-3 lg:flex-col lg:items-stretch">
+            <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="in_stock" value="1" class="size-4 accent-[var(--accent)]"{% if pf.values.in_stock %} checked{% endif %}> Mavjud</label>
+            <button type="submit" class="btn btn-primary btn-sm" data-pending="Qo'shilmoqda...">{% icon "image-plus" 14 %} Qo'shish</button>
+          </div>
+        </form>
+        {% endwith %}
+        {% if row.products %}
+        <ul class="grid gap-2">
+          {% for p in row.products %}
+          <li class="flex flex-wrap items-center gap-3 rounded-lg border border-line p-2">
+            {% if p.image_url %}<img src="{{ p.image_url }}" alt="" class="size-12 flex-none rounded-md object-cover" loading="lazy">{% else %}<span class="grid size-12 flex-none place-items-center rounded-md bg-bg text-muted">{% icon "image-icon" 18 %}</span>{% endif %}
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-semibold">{{ p.name }}</p>
+              <p class="text-sm text-muted">{{ p.price|money }} / {{ p.unit }} · {{ shop_categories|get:p.category }}</p>
+            </div>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="_action" value="product_stock"><input type="hidden" name="id" value="{{ p.id }}"><input type="hidden" name="shop" value="{{ s.id }}">
+              <button type="submit" class="badge {% if p.in_stock %}badge-success{% else %}badge-warning{% endif %} cursor-pointer" title="Holatni almashtirish">{% if p.in_stock %}Mavjud{% else %}Tugagan{% endif %}</button>
+            </form>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="_action" value="product_delete"><input type="hidden" name="id" value="{{ p.id }}"><input type="hidden" name="shop" value="{{ s.id }}">
+              <button type="submit" class="btn btn-ghost btn-sm px-2 text-danger" data-confirm="«{{ p.name }}» o'chirilsinmi?" aria-label="O'chirish">{% icon "trash2" 14 %}</button>
+            </form>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-muted">Hali mahsulot yo'q. Yuqoridagi formadan qo'shing — do'kon sahifasida rasm va narxi bilan chiqadi.</p>
+        {% endif %}
+      </div>
+    </details>
+  </li>
+  {% endwith %}
+  {% endfor %}
+</ul>
+{% else %}
+{% include "admin_panel/empty.html" with title="Do'kon topilmadi" text="Yuqoridagi formadan birinchi do'konni qo'shing." %}
+{% endif %}

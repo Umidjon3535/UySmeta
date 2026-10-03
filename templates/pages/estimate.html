@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} · UySmeta{% endblock %}
+{% block og_title %}{{ page_title }}{% endblock %}
+{% block description %}Taxminiy jami: {{ result.total|money }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-10">
+  <div class="no-print mb-5 flex flex-wrap items-center justify-between gap-3">
+    <a href="{% if current_user %}/smetalar{% else %}/{% endif %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-accent">
+      {% icon "arrow-left" 16 %} {% if current_user %}Mening smetalarim{% else %}Bosh sahifa{% endif %}
+    </a>
+    <p class="text-sm text-muted">{{ estimate.region|region_name }} narxlarida · {{ estimate.created_at|uzdate }}</p>
+  </div>
+
+  {% if saqlandi %}
+  <p class="alert alert-success no-print mb-5" role="status">
+    {% icon "check-circle2" 18 "mt-px flex-none" %}
+    <span>Smeta saqlandi. Bu sahifa havolasini ustaga yoki oilangizga yuborishingiz mumkin.{% if is_unclaimed and not current_user %} Yo'qolib qolmasligi uchun hisobingizga saqlang.{% endif %}</span>
+  </p>
+  {% endif %}
+
+  {# Chop etishdagi sarlavha #}
+  <div class="print-only mb-4">
+    <p class="font-head text-xl font-extrabold">UySmeta — ta'mirlash smetasi</p>
+    <p class="text-muted">{{ estimate.region|region_name }} narxlarida · Sana: {{ estimate.created_at|uzdate }} · {{ SITE_HOST }}{{ path }}</p>
+  </div>
+
+  <article class="card p-4 sm:p-7">
+    {% include "includes/estimate_view.html" with result=result title=estimate.title label="Saqlangan smeta" %}
+    <div class="no-print mt-5 flex flex-wrap gap-3">
+      <a href="/smeta/{{ estimate.public_id }}/pdf" class="btn btn-primary">{% icon "file-text" 16 %} PDF yuklab olish{% if not can_pdf %} <span class="badge px-2 py-0 text-[11px]">tarif</span>{% endif %}</a>
+      <button type="button" class="btn btn-secondary" data-print>{% icon "printer" 16 %} Chop etish</button>
+      <button type="button" class="btn btn-secondary" data-copy="{{ share_text }}" data-copy-label="Smetani nusxalash">{% icon "copy" 16 %}<span aria-live="polite">Smetani nusxalash</span></button>
+      <button type="button" class="btn btn-secondary" data-share="{{ path }}" hidden>{% icon "share2" 16 %} Ulashish</button>
+      <a href="/ustalar?smeta={{ estimate.public_id }}" class="btn btn-secondary">{% icon "search" 16 %} Usta topish</a>
+    </div>
+
+    {% if estimate.photo %}
+    <figure class="mt-6">
+      <img src="{{ estimate.photo|photo_url }}" alt="Xona rasmi" class="max-h-80 w-full rounded-[14px] border border-line object-cover" loading="lazy">
+      <figcaption class="mt-2 text-sm text-muted">Yuklangan xona rasmi</figcaption>
+    </figure>
+    {% endif %}
+    {% if estimate.analysis %}
+    <div class="mt-4">{% include "includes/analysis_card.html" with analysis=estimate.analysis %}</div>
+    {% endif %}
+  </article>
+
+  {# Egasi uchun boshqaruv #}
+  <div class="no-print mt-4 flex flex-wrap items-center gap-3">
+    {% if is_owner %}
+    <details class="w-full sm:w-auto"{% if rename_state.message or rename_state.errors %} open{% endif %}>
+      <summary class="btn btn-ghost btn-sm list-none">{% icon "pencil" 14 %} Nomini o'zgartirish</summary>
+      <form method="post" class="mt-2 flex w-full flex-wrap items-start gap-2 sm:w-auto">
+        {% csrf_token %}
+        <input type="hidden" name="_action" value="rename">
+        <label for="rename" class="sr-only">Smeta nomi</label>
+        <div>
+          <input id="rename" name="title" class="input sm:w-72" value="{{ estimate.title|default:'' }}" maxlength="80" required{% if rename_state.errors.title %} aria-invalid="true"{% endif %}>
+          {% if rename_state.errors.title %}<p class="field-error" role="alert">{{ rename_state.errors.title }}</p>{% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary" data-pending="...">Saqlash</button>
+        <div class="w-full">{% form_message rename_state %}</div>
+      </form>
+    </details>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="_action" value="delete">
+      <button type="submit" class="btn btn-danger btn-sm" data-confirm="Smeta butunlay o'chiriladi. Davom etasizmi?">{% icon "trash2" 14 %} O'chirish</button>
+    </form>
+    {% endif %}
+    {% if is_unclaimed %}
+      {% if current_user %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="_action" value="claim">
+        <button type="submit" class="btn btn-secondary">Hisobimga saqlash</button>
+      </form>
+      {% else %}
+      <a href="/royxat?claim={{ estimate.public_id }}&amp;next={{ path|urlencode:'' }}" class="btn btn-secondary">{% icon "log-in" 16 %} Ro'yxatdan o'tib, hisobimga saqlash</a>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {% if masters %}
+  <section class="no-print mt-12" aria-labelledby="related-title">
+    <h2 id="related-title" class="text-2xl font-extrabold">Bu ish uchun mos ustalar</h2>
+    <p class="mb-5 mt-1 text-muted">Bog'lanish so'roviga smeta avtomatik biriktiriladi.</p>
+    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {% for master in masters %}{% include "includes/master_card.html" with estimate_id=estimate.public_id %}{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

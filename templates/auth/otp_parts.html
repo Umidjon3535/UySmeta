@@ -1,0 +1,49 @@
+{% comment %}
+Tasdiqlash kodi bilan ikki bosqichli formalar uchun umumiy qismlar.
+part="channels" — kod olish tugmalari (faqat ulangan kanallar); part="code" — kodni qayerdan olish yo'riqnomasi + kod maydoni.
+{% endcomment %}
+{% if part == "channels" %}
+  {% if not channels %}
+  <p class="alert alert-error">Tasdiqlash xizmati hozircha sozlanmagan. Keyinroq urinib ko'ring.</p>
+  {% else %}
+  <div class="grid gap-2">
+    {% if "telegram" in channels %}
+    <button type="submit" name="channel" value="telegram" class="btn btn-primary btn-lg btn-block" data-pending="Kuting...">{% icon "send" 18 %} {{ telegram_label|default:"Telegram orqali kod olish" }}</button>
+    {% endif %}
+    {% if "sms" in channels %}
+    <button type="submit" name="channel" value="sms" class="btn btn-lg btn-block {% if 'telegram' in channels %}btn-secondary{% else %}btn-primary{% endif %}" data-pending="Kuting...">{% icon "message-square" 18 %} SMS orqali kod olish</button>
+    {% endif %}
+    {% if "dev" in channels %}
+    <button type="submit" name="channel" value="dev" class="btn btn-primary btn-lg btn-block" data-pending="Kuting...">{% icon "key-round" 18 %} Kod olish (test rejimi)</button>
+    <p class="hint text-center">Bu kompyuterdagi sinov versiyasi: Telegram bot ulanmagan, kod ekranda chiqadi. Haqiqiy saytda kod Telegram orqali keladi.</p>
+    {% endif %}
+    {% if "telegram" in channels %}<p class="hint text-center">Telegram orqali — bepul va tez. Bot faqat kod yuboradi.</p>{% endif %}
+  </div>
+  {% endif %}
+{% else %}
+  <div class="grid gap-3 rounded-[14px] border border-accent/40 bg-accent-soft/50 p-4">
+    <input type="hidden" name="codeSent" value="1">
+    <input type="hidden" name="channel" value="{{ state.data.channel }}">
+    {% if state.data.telegramUrl %}<input type="hidden" name="telegramUrl" value="{{ state.data.telegramUrl }}">{% endif %}
+    {% if state.data.devCode %}<input type="hidden" name="devCode" value="{{ state.data.devCode }}">{% endif %}
+    {% if state.data.channel == "telegram" and state.data.telegramUrl %}
+    <div class="grid gap-3">
+      <ol class="grid gap-1.5 text-sm">
+        <li><strong>1.</strong> Pastdagi tugma orqali UySmeta botini oching va <strong>«Start»</strong> ni bosing</li>
+        <li><strong>2.</strong> Botda <strong>«📱 Raqamimni yuborish»</strong> tugmasini bosing</li>
+        <li><strong>3.</strong> Bot yuborgan 6 xonali kodni shu yerga kiriting</li>
+      </ol>
+      <a href="{{ state.data.telegramUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block">{% icon "send" 16 %} Telegram botni ochish</a>
+    </div>
+    {% endif %}
+    <div>
+      <label for="{{ p }}f-code" class="label">Tasdiqlash kodi</label>
+      <input id="{{ p }}f-code" name="code" class="input text-center font-head text-xl font-bold tracking-[0.4em]" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="• • • • • •" value="{{ state.values.code|default:'' }}"{% if state.errors.code %} aria-invalid="true" aria-describedby="{{ p }}f-code-error"{% endif %}>
+      {% if state.errors.code %}<p id="{{ p }}f-code-error" class="field-error" role="alert">{{ state.errors.code }}</p>{% endif %}
+    </div>
+    {% if state.data.devCode %}
+    <p class="hint">{% icon "key-round" 12 "mr-1 inline" %}Test rejimi (SMS/Telegram ulanmagan): kod <strong class="text-fg">{{ state.data.devCode }}</strong></p>
+    {% endif %}
+    <button type="submit" name="step" value="send" formnovalidate class="link justify-self-start text-sm">Kod kelmadimi? Qayta yuborish</button>
+  </div>
+{% endif %}

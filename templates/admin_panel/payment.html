@@ -1,0 +1,30 @@
+{% include "admin_panel/section_title.html" with title="To'lov kartalari" text="Mijozlar buyurtmadan keyin shu kartalarga Click, Payme yoki bank ilovasi orqali pul o'tkazadi va chek yuklaydi." %}
+{% if not cards %}
+<p class="alert alert-info mb-5">{% icon "banknote" 18 "mt-px flex-none" %}<span>Hozir karta kiritilmagan — mijozlarga "operator qo'ng'iroq qiladi" deb ko'rsatilmoqda.</span></p>
+{% endif %}
+<form method="post" class="grid gap-5">
+  {% csrf_token %}
+  <input type="hidden" name="_action" value="payment_cards">
+  {% form_message states.payment_cards %}
+  <div class="grid gap-4 md:grid-cols-2">
+    {% for f in card_fields %}
+    <fieldset class="card min-w-0 p-5">
+      <legend class="px-1 font-head text-lg font-bold">{{ f.label }}</legend>
+      <div class="mt-1 grid gap-3">
+        <div>
+          <label for="{{ f.type }}Number" class="label-sm">Karta raqami</label>
+          <input id="{{ f.type }}Number" name="{{ f.type }}Number" class="input font-mono tracking-wider" inputmode="numeric" autocomplete="off" placeholder="{{ f.placeholder }}" value="{{ f.number }}"{% if f.number_error %} aria-invalid="true"{% endif %}>
+          {% if f.number_error %}<p class="field-error">{{ f.number_error }}</p>{% endif %}
+        </div>
+        <div>
+          <label for="{{ f.type }}Holder" class="label-sm">Karta egasi (kartadagi kabi)</label>
+          <input id="{{ f.type }}Holder" name="{{ f.type }}Holder" class="input uppercase" autocomplete="off" placeholder="UMIDJON NURIDDINOV" value="{{ f.holder }}"{% if f.holder_error %} aria-invalid="true"{% endif %}>
+          {% if f.holder_error %}<p class="field-error">{{ f.holder_error }}</p>{% endif %}
+        </div>
+      </div>
+    </fieldset>
+    {% endfor %}
+  </div>
+  <p class="text-sm text-muted">Karta kerak bo'lmasa, ikkala maydonini bo'sh qoldiring. Hech qanday karta bo'lmasa, mijozga "operator qo'ng'iroq qiladi" deb ko'rsatiladi.</p>
+  <button type="submit" class="btn btn-primary justify-self-start" data-pending="Saqlanmoqda...">Kartalarni saqlash</button>
+</form>

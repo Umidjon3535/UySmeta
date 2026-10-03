@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Profil · UySmeta{% endblock %}
+
+{% block content %}
+<div class="container-page py-6 md:py-10">
+  {# Sarlavha: avatar, ism, aloqa va rol #}
+  <section class="card mb-6 flex flex-wrap items-center gap-4 p-5 sm:gap-5 sm:p-6">
+    <span class="avatar avatar-lg" aria-hidden="true">{{ user.name|initials }}</span>
+    <div class="min-w-0 flex-1">
+      <h1 class="break-words font-head text-2xl font-extrabold leading-tight sm:text-[28px]">{{ user.name }}</h1>
+      <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+        <span class="inline-flex items-center gap-1.5">{% icon "phone" 14 %} {{ user.phone|phone }}</span>
+        <span class="inline-flex items-center gap-1.5">{% icon "calendar-clock" 14 %} {{ user.created_at|uzdate }} dan beri</span>
+      </p>
+      <div class="mt-2 flex flex-wrap gap-1.5">
+        {% if user.role == "admin" %}<span class="badge badge-muted">{% icon "settings" 13 %} Administrator</span>
+        {% elif master and master.status == "approved" %}<span class="badge badge-success">{% icon "hard-hat" 13 %} Usta</span>
+        {% else %}<span class="badge badge-muted">{% icon "user-round" 13 %} Mijoz</span>{% endif %}
+        {% if master_plan.badge %}<span class="badge badge-warning">{% icon "star" 13 "fill-star" %} {{ master_plan.badge }}</span>{% endif %}
+      </div>
+    </div>
+    <div class="flex w-full flex-wrap gap-2 sm:w-auto">
+      {% if user.role == "admin" %}<a href="/admin" class="btn btn-primary flex-1 sm:flex-none">{% icon "layout-dashboard" 16 %} Boshqaruv paneli</a>{% endif %}
+      <form method="post" action="/chiqish" class="flex-1 sm:flex-none">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary w-full">{% icon "log-out" 16 %} Chiqish</button>
+      </form>
+    </div>
+  </section>
+
+  {% if parol %}
+  <p class="alert alert-success mb-6" role="status">{% icon "check-circle2" 18 "mt-px flex-none" %} Parol yangilandi. Boshqa qurilmalardagi sessiyalar yopildi.</p>
+  {% endif %}
+  {% if ariza %}
+  <p class="alert alert-success mb-6" role="status">{% icon "check-circle2" 18 "mt-px flex-none" %} Arizangiz qabul qilindi. Tekshiruvdan so'ng profilingiz ustalar ro'yxatida paydo bo'ladi.</p>
+  {% endif %}
+
+  {# Qisqa ko'rsatkichlar #}
+  <ul class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <li class="card p-4">
+      <p class="flex items-center gap-2 text-sm text-muted">{% icon "wallet" 16 %} Balans</p>
+      <p class="mt-1 truncate font-head text-xl font-extrabold tabular-nums">{{ user.balance|money }}</p>
+      <a href="/hamyon" class="link text-sm">Hamyon va tarix →</a>
+    </li>
+    {% if master %}
+    <li class="card p-4">
+      <p class="flex items-center gap-2 text-sm text-muted">{% icon "badge-check" 16 %} Usta tarifi</p>
+      <p class="mt-1 truncate font-head text-xl font-extrabold">{{ master_plan.title }}</p>
+      <a href="/narxlar" class="link text-sm">{% if master.active_plan %}{{ master.plan_until|uzdate }} gacha{% else %}Tarifni oshirish →{% endif %}</a>
+    </li>
+    {% if master.status == "approved" %}
+    <li class="card p-4">
+      <p class="flex items-center gap-2 text-sm text-muted">{% icon "message-square" 16 %} So'rovlar</p>
+      <p class="mt-1 font-head text-xl font-extrabold tabular-nums">{{ incoming|length }}</p>
+      <a href="#sorovlar" class="link text-sm">Ko'rish →</a>
+    </li>
+    {% endif %}
+    <li class="card p-4">
+      <p class="flex items-center gap-2 text-sm text-muted">{% icon "image-icon" 16 %} Portfolio</p>
+      <p class="mt-1 font-head text-xl font-extrabold tabular-nums">{{ portfolio|length }} <span class="text-base font-semibold text-muted">/ {{ portfolio_max }}</span></p>
+      <a href="#portfolio" class="link text-sm">Rasm qo'shish →</a>
+    </li>
+    {% else %}
+    <li class="card p-4">
+      <p class="flex items-center gap-2 text-sm text-muted">{% icon "badge-check" 16 %} Tarif</p>
+      <p class="mt-1 truncate font-head text-xl font-extrabold">{% if user.plan %}{{ user.plan|plan_title }}{% else %}Bepul{% endif %}</p>
+      {% if user.plan != "design3d" %}<a href="/narxlar" class="link text-sm">Tarif olish →</a>{% else %}<span class="text-sm text-success">Eng yuqori tarif</span>{% endif %}
+    </li>
+    <li class="card p-4">
+      <p class="flex items-center gap-2 text-sm text-muted">{% icon "send" 16 %} So'rovlarim</p>
+      <p class="mt-1 font-head text-xl font-extrabold tabular-nums">{{ sent|length }}</p>
+      <a href="/ustalar" class="link text-sm">Usta topish →</a>
+    </li>
+    <li class="card p-4">
+      <p class="flex items-center gap-2 text-sm text-muted">{% icon "file-text" 16 %} Buyurtmalar</p>
+      <p class="mt-1 font-head text-xl font-extrabold tabular-nums">{{ orders|length }}</p>
+      <a href="/smetalar" class="link text-sm">Smetalarim →</a>
+    </li>
+    {% endif %}
+  </ul>
+
+  {# minmax(0,1fr): ichidagi keng narsalar ustunni kengaytirib, telefonda sahifani chiqarib yubormasin #}
+  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <div class="grid min-w-0 gap-6">
+      {% if master %}
+      <section id="usta" class="card scroll-mt-24 p-5 sm:p-6" aria-labelledby="master-title">
+        <div class="mb-5 flex flex-wrap items-center gap-2.5">
+          <h2 id="master-title" class="text-xl font-extrabold">Usta profili</h2>
+          <span class="badge {{ master.status|status_badge }}">
+            {% if master.status == "approved" %}{% icon "check-circle2" 14 %}{% elif master.status == "pending" %}{% icon "clock" 14 %}{% else %}{% icon "x-circle" 14 %}{% endif %}
+            {{ master.status|master_status }}
+          </span>
+          {% if master.status == "approved" %}<a href="/ustalar/{{ master.id }}" class="btn btn-ghost btn-sm ml-auto">{% icon "eye" 14 %} Ommaviy sahifam</a>{% endif %}
+        </div>
+
+        {% if master.status == "rejected" %}
+        <p class="text-muted">Arizangiz rad etildi. Batafsil ma'lumot uchun Telegram: <a href="https://t.me/{{ contact_telegram }}" class="link" target="_blank" rel="noopener">@{{ contact_telegram }}</a>.</p>
+        {% else %}
+        {% if master.status == "pending" %}
+        <p class="alert alert-info mb-5">{% icon "clock" 18 "mt-px flex-none" %}<span>Arizangiz tekshiruvda. Shu orada portfolioni to'ldiring — tasdiqlangach mijozlar darhol ko'radi.</span></p>
+        {% endif %}
+
+        {# So'rovlar va portfolio — alohida sahifalarda (/usta/sorovlar, /usta/portfolio) #}
+        <div class="grid gap-3 sm:grid-cols-2">
+          {% if master.status == "approved" %}
+          <a href="/usta/sorovlar" class="flex items-center gap-3 rounded-[14px] border border-line p-4 transition-colors hover:border-accent hover:bg-accent-soft">
+            <span class="icon-box flex-none">{% icon "message-square" 20 %}</span>
+            <span class="min-w-0 flex-1">
+              <strong class="block">Kelgan so'rovlar</strong>
+              <span class="text-sm text-muted">{{ incoming|length }} ta{% if new_requests %} · <span class="font-semibold text-warning">{{ new_requests }} ta yangi</span>{% endif %}</span>
+            </span>
+            {% icon "chevron-right" 18 "text-muted" %}
+          </a>
+          {% endif %}
+          <a href="/usta/portfolio" class="flex items-center gap-3 rounded-[14px] border border-line p-4 transition-colors hover:border-accent hover:bg-accent-soft">
+            <span class="icon-box flex-none">{% icon "image-icon" 20 %}</span>
+            <span class="min-w-0 flex-1">
+              <strong class="block">Portfolio</strong>
+              <span class="text-sm text-muted">{{ portfolio|length }} / {{ portfolio_max }} rasm</span>
+            </span>
+            {% icon "chevron-right" 18 "text-muted" %}
+          </a>
+        </div>
+        <details class="group mt-6 rounded-[14px] border border-line"{% if master_open %} open{% endif %}>
+          <summary class="flex cursor-pointer list-none items-center gap-2 px-4 py-3 font-semibold">
+            {% icon "pencil" 16 "text-accent" %} Usta ma'lumotlarini tahrirlash
+            <span class="ml-auto transition-transform group-open:rotate-180">{% icon "chevron-down" 18 %}</span>
+          </summary>
+          <div class="border-t border-line p-4">
+            {% include "includes/master_profile_form.html" with mode="edit" form_state=states.master regions=master_regions defaults=master %}
+          </div>
+        </details>
+        {% endif %}
+      </section>
+      {% else %}
+      <section class="card flex flex-wrap items-center gap-4 p-5 sm:p-6">
+        <span class="icon-box">{% icon "hard-hat" 20 %}</span>
+        <div class="min-w-0 flex-1">
+          <h2 class="font-bold">Siz ustamisiz?</h2>
+          <p class="text-sm text-muted">Ariza qoldiring va smeta tuzgan mijozlardan buyurtma oling.</p>
+        </div>
+        <a href="/usta-bolish" class="btn btn-primary">Usta bo'lish</a>
+      </section>
+      {% endif %}
+
+      {# Yuborilgan so'rovlar #}
+      <section class="card p-5 sm:p-6" aria-labelledby="sent-title">
+        <h2 id="sent-title" class="mb-4 text-xl font-extrabold">Ustalarga so'rovlarim</h2>
+        {% if sent %}
+        <ul class="grid gap-2">
+          {% for r in sent %}
+          <li class="flex flex-wrap items-center gap-3 rounded-[12px] border border-line px-3 py-2.5">
+            <span class="avatar size-9 text-sm" aria-hidden="true">{{ r.master.name|initials }}</span>
+            <div class="min-w-0 flex-1">
+              <a href="/ustalar/{{ r.master_id }}" class="block truncate font-semibold hover:text-accent">{{ r.master.name }}</a>
+              <span class="text-sm text-muted">{{ r.created_at|uzdate }}</span>
+            </div>
+            <span class="badge {{ r.status|status_badge }}">{{ r.status|request_status }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Hali so'rov yubormagansiz. <a href="/ustalar" class="link">Usta topish</a></p>
+        {% endif %}
+      </section>
+
+      {# Tarif buyurtmalari #}
+      {% if orders %}
+      <section class="card p-5 sm:p-6" aria-labelledby="orders-title">
+        <h2 id="orders-title" class="mb-4 text-xl font-extrabold">Buyurtmalarim</h2>
+        <ul class="grid gap-2">
+          {% for o in orders %}
+          <li class="flex flex-wrap items-center gap-3 rounded-[12px] border border-line px-3 py-2.5">
+            <span class="icon-box size-9 flex-none">{% icon "credit-card" 16 %}</span>
+            <div class="min-w-0 flex-1">
+              <a href="/buyurtma/{{ o.id }}" class="block truncate font-semibold hover:text-accent">{{ o.plan|plan_title }} <span class="font-normal text-muted">#{{ o.id }}</span></a>
+              <span class="text-sm text-muted">{{ o.amount|money }} · {{ o.created_at|uzdate }}</span>
+            </div>
+            {% if o.status == "new" and not o.receipt %}<a href="/buyurtma/{{ o.id }}" class="btn btn-primary btn-sm">To'lash</a>{% endif %}
+            <span class="badge {{ o.status|status_badge }}">{% if o.status == "new" and o.receipt %}To'lov tekshirilmoqda{% else %}{{ o.status|order_status }}{% endif %}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </div>
+
+    <aside class="grid min-w-0 gap-6 lg:sticky lg:top-[calc(var(--header-h)+16px)]">
+      <section class="card p-5 sm:p-6" aria-labelledby="account-title">
+        <h2 id="account-title" class="mb-4 flex items-center gap-2 text-lg font-extrabold">{% icon "user-round" 18 "text-accent" %} Shaxsiy ma'lumotlar</h2>
+        <form method="post" class="grid gap-4">
+          {% csrf_token %}
+          <input type="hidden" name="_action" value="profile">
+          {% form_message states.profile %}
+          {% field states.profile "name" "Ism va familiya" value=user.name autocomplete="name" required=True %}
+          <div>
+            <p class="label">Telefon</p>
+            <p class="input flex items-center text-muted">{{ user.phone|phone }}</p>
+          </div>
+          <button type="submit" class="btn btn-secondary" data-pending="Saqlanmoqda...">{% icon "save" 16 %} Saqlash</button>
+        </form>
+      </section>
+      <details class="card group"{% if states.password %} open{% endif %}>
+        <summary class="flex cursor-pointer list-none items-center gap-2 p-5 text-lg font-extrabold sm:px-6">
+          {% icon "key-round" 18 "text-accent" %} Parolni o'zgartirish
+          <span class="ml-auto transition-transform group-open:rotate-180">{% icon "chevron-down" 18 %}</span>
+        </summary>
+        <form method="post" class="grid gap-4 border-t border-line p-5 sm:p-6">
+          {% csrf_token %}
+          <input type="hidden" name="_action" value="password">
+          {% form_message states.password %}
+          {% field states.password "currentPassword" "Joriy parol" type="password" maxlength=128 autocomplete="current-password" required=True %}
+          {% field states.password "password" "Yangi parol" type="password" hint="Aynan 8 belgi" maxlength=8 autocomplete="new-password" required=True %}
+          {% field states.password "passwordConfirm" "Yangi parolni takrorlang" type="password" maxlength=8 autocomplete="new-password" required=True %}
+          <button type="submit" class="btn btn-secondary" data-pending="Saqlanmoqda...">Parolni yangilash</button>
+        </form>
+      </details>
+    </aside>
+  </div>
+</div>
+{% endblock %}

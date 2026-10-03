@@ -1,0 +1,72 @@
+{# Usta arizasi (mode="apply") yoki usta profilini tahrirlash (mode="edit"). Parametrlar: form_state, regions, defaults #}
+{% with values=form_state.values errors=form_state.errors %}
+<form method="post" enctype="multipart/form-data" class="grid grid-cols-1 gap-4" novalidate data-master-form>
+  {% csrf_token %}
+  {% if mode == "edit" %}<input type="hidden" name="_action" value="master">{% endif %}
+  {% form_message form_state %}
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    {% select_field form_state "specialty" "Mutaxassislik" specialties value=defaults.specialty %}
+    {% with region_value=values.region|default:defaults.region|default:regions.0.key %}
+    {% if regions|length > 1 %}
+    <div>
+      <label for="f-region" class="label">Hudud</label>
+      <select id="f-region" name="region" class="select" data-region-select>
+        {% for r in regions %}<option value="{{ r.key }}"{% if r.key == region_value %} selected{% endif %}>{{ r.name }}</option>{% endfor %}
+      </select>
+    </div>
+    {% else %}
+    <input type="hidden" name="region" value="{{ regions.0.key }}">
+    {% endif %}
+    <div>
+      <label for="f-district" class="label">Asosiy ish joyi (tuman yoki shahar)</label>
+      {% with district_value=values.district|default:defaults.district|default:"" %}
+      {% for r in regions %}
+      <div data-district-for="{{ r.key }}"{% if regions|length > 1 and r.key != region_value %} hidden{% endif %}>
+        {% if r.districts %}
+        <select id="{% if r.key == region_value %}f-district{% else %}f-district-{{ r.key }}{% endif %}" name="district" class="select" required{% if errors.district %} aria-invalid="true"{% endif %}{% if regions|length > 1 and r.key != region_value %} disabled{% endif %}>
+          <option value="" disabled{% if district_value not in r.districts %} selected{% endif %}>Tanlang</option>
+          {% for d in r.districts %}<option{% if d == district_value %} selected{% endif %}>{{ d }}</option>{% endfor %}
+        </select>
+        {% else %}
+        <input id="{% if r.key == region_value %}f-district{% else %}f-district-{{ r.key }}{% endif %}" name="district" class="input" maxlength="60" placeholder="Masalan: Markaz tumani" value="{% if r.key == region_value %}{{ district_value }}{% endif %}" required{% if errors.district %} aria-invalid="true"{% endif %}{% if regions|length > 1 and r.key != region_value %} disabled{% endif %}>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% endwith %}
+      {% if errors.district %}<p class="field-error" role="alert">{{ errors.district }}</p>{% endif %}
+      {% if errors.region %}<p class="field-error" role="alert">{{ errors.region }}</p>{% endif %}
+    </div>
+    {% endwith %}
+    {% field form_state "experienceYears" "Tajriba (yil)" type="number" value=defaults.experience_years inputmode="numeric" min=0 max=60 required=True %}
+    {% phone_field form_state value=defaults.phone label="Mijozlar uchun telefon" %}
+  </div>
+  {% if mode == "edit" %}
+  {% textarea_field form_state "bio" "O'zingiz haqingizda (ixtiyoriy, ommaviy sahifada chiqadi)" value=defaults.bio maxlength=600 placeholder="Qanday ishlarni bajarasiz, qaysi materiallar bilan ishlaysiz, brigadangiz bormi..." %}
+  {% endif %}
+
+  {# Portfolio hujjati: PDF yoki DOCX — administrator ko'rib chiqib tasdiqlaydi #}
+  <div data-upload>
+    <p class="label">Portfolio hujjati{% if mode == "edit" %} (almashtirish ixtiyoriy){% endif %}</p>
+    <label for="f-document" class="flex cursor-pointer items-center gap-3 rounded-[14px] border-2 border-dashed px-4 py-4 transition-colors hover:border-accent hover:bg-accent-soft has-[:focus-visible]:border-accent {% if errors.document %}border-danger{% else %}border-line{% endif %}">
+      <span class="icon-box flex-none">{% icon "file-plus2" 20 %}</span>
+      <span class="min-w-0">
+        <span class="block truncate font-semibold" data-upload-label>{% if mode == "edit" and defaults.document_name %}{{ defaults.document_name }}{% else %}PDF yoki Word (DOCX) faylni tanlang{% endif %}</span>
+        <span class="block text-sm text-muted">Bajargan ishlaringiz rasmlari, obyektlar ro'yxati, tavsiyalar · 10 MB gacha</span>
+      </span>
+      <input id="f-document" name="document" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="sr-only"{% if mode == "apply" %} required{% endif %}{% if errors.document %} aria-invalid="true" aria-describedby="f-document-error"{% endif %}>
+    </label>
+    {% if errors.document %}<p id="f-document-error" class="field-error" role="alert">{{ errors.document }}</p>{% endif %}
+  </div>
+
+  {% if mode == "apply" %}
+  <div>
+    <label class="flex items-start gap-2.5 text-sm">
+      <input type="checkbox" name="oferta" value="1" class="mt-0.5 size-4 flex-none accent-[var(--accent)]"{% if values.oferta %} checked{% endif %}{% if errors.oferta %} aria-invalid="true" aria-describedby="f-oferta-error"{% endif %}>
+      <span><a href="/oferta" class="link" target="_blank" rel="noopener">Ommaviy oferta</a> shartlarini o'qidim va qabul qilaman. Ma'lumotlarim to'g'riligini tasdiqlayman.</span>
+    </label>
+    {% if errors.oferta %}<p id="f-oferta-error" class="field-error" role="alert">{{ errors.oferta }}</p>{% endif %}
+  </div>
+  {% endif %}
+  <button type="submit" class="btn btn-primary {% if mode == 'apply' %}btn-lg btn-block{% else %}justify-self-start{% endif %}" data-pending="Yuborilmoqda...">{% if mode == "apply" %}{% icon "send" 18 %} Arizani yuborish{% else %}{% icon "save" 16 %} Saqlash{% endif %}</button>
+</form>
+{% endwith %}

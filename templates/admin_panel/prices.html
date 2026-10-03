@@ -1,0 +1,79 @@
+<div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h2 class="font-head text-2xl font-extrabold">Narxlar — {{ region.name }}</h2>
+    <p class="mt-1 text-muted">{% if updated_at %}Oxirgi o'zgarish: {{ updated_at|uzdate }}. Saqlaganingizdan so'ng kalkulyator darhol yangi narxlar bilan ishlaydi.{% else %}Hozir boshlang'ich (taxminiy) narxlar ishlatilmoqda — bozor narxlariga moslab tuzating.{% endif %}</p>
+  </div>
+  <form method="post" action="/admin?tab=narxlar&amp;hudud={{ region.key }}">
+    {% csrf_token %}
+    <input type="hidden" name="_action" value="reset_prices">
+    <input type="hidden" name="region" value="{{ region.key }}">
+    <button type="submit" class="btn btn-danger btn-sm" data-confirm="{{ region.name }} narxlari boshlang'ich qiymatlarga qaytariladi. Davom etasizmi?">Boshlang'ich narxlarga qaytarish</button>
+  </form>
+</div>
+
+<div class="mb-5 flex flex-wrap items-center gap-2">
+  {% for r in enabled_regions %}
+  <a href="/admin?tab=narxlar&amp;hudud={{ r.key }}" class="inline-flex min-h-9 items-center rounded-full border px-3.5 text-sm font-semibold {% if r.key == region.key %}border-accent bg-accent text-on-accent{% else %}border-line bg-card text-muted hover:border-accent{% endif %}">{{ r.short }}</a>
+  {% endfor %}
+  {% if other_regions %}
+  <details class="relative">
+    <summary class="inline-flex min-h-9 cursor-pointer list-none items-center rounded-full border border-dashed border-line px-3.5 text-sm text-muted">Boshqa hududlar (o'chiq)…</summary>
+    <div class="card absolute z-10 mt-2 grid w-64 gap-1 p-2 shadow-lg">
+      {% for r in other_regions %}<a href="/admin?tab=narxlar&amp;hudud={{ r.key }}" class="rounded-lg px-3 py-2 text-sm hover:bg-accent-soft">{{ r.name }}</a>{% endfor %}
+    </div>
+  </details>
+  {% endif %}
+</div>
+
+<form method="post" action="/admin?tab=narxlar&amp;hudud={{ region.key }}" class="grid gap-6">
+  {% csrf_token %}
+  <input type="hidden" name="_action" value="prices">
+  <input type="hidden" name="region" value="{{ region.key }}">
+  {% form_message states.prices %}
+
+  <fieldset class="card min-w-0 p-5">
+    <legend class="px-1 font-head text-lg font-bold">Sifat koeffitsiyentlari</legend>
+    <p class="mb-4 text-sm text-muted">Materiallar va ish haqi narxiga ko'paytiriladi (O'rta = 1).</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Daraja</th><th>Materiallar</th><th>Ish haqi</th></tr></thead>
+        <tbody>
+          {% for row in quality_rows %}
+          <tr>
+            <td class="font-semibold">{{ row.label }}</td>
+            {% for c in row.cells %}
+            <td>
+              <input name="{{ c.key }}" aria-label="{{ c.aria }}" class="input w-28" inputmode="decimal" value="{{ c.value }}"{% if c.error %} aria-invalid="true"{% endif %}>
+              {% if c.error %}<p class="field-error">{{ c.error }}</p>{% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </fieldset>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    {% for g in price_groups %}
+    <fieldset class="card min-w-0 p-5">
+      <legend class="px-1 font-head text-lg font-bold">{{ g.title }}</legend>
+      <div class="mt-2 grid gap-3">
+        {% for f in g.fields %}
+        <div class="grid items-center gap-1.5 sm:grid-cols-[1fr_160px] sm:gap-3">
+          <label for="{{ f.key }}" class="text-sm">{{ f.label }}</label>
+          <div>
+            <input id="{{ f.key }}" name="{{ f.key }}" class="input text-right tabular-nums" inputmode="numeric" value="{{ f.value }}"{% if f.error %} aria-invalid="true"{% endif %}>
+            {% if f.error %}<p class="field-error">{{ f.error }}</p>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </fieldset>
+    {% endfor %}
+  </div>
+
+  <div class="sticky bottom-[calc(var(--bottom-nav-h)+8px)] z-10 flex justify-end md:bottom-4">
+    <button type="submit" class="btn btn-primary btn-lg" data-pending="Saqlanmoqda...">Narxlarni saqlash</button>
+  </div>
+</form>

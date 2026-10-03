@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Ustalar tariflari · UySmeta{% endblock %}
+{% block description %}Ustalar uchun tariflar: portfolio, Pro va Top usta belgisi, ro'yxatda yuqori o'rin.{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-12">
+  <div class="section-head center">
+    <p class="eyebrow">Ustalar uchun</p>
+    <h1 class="section-title">Ko'proq mijoz — to'g'ri tarif bilan</h1>
+    <p class="section-lead">Mijozlardan so'rovlar har doim bepul va komissiyasiz. Pullik tariflar sizni ro'yxatda oldinga chiqaradi va ishlaringizni ko'proq ko'rsatadi.</p>
+  </div>
+
+  {% if buy_state.message %}<div class="mx-auto mb-6 max-w-3xl">{% form_message buy_state %}</div>{% endif %}
+  <p class="mx-auto mb-6 flex max-w-3xl flex-wrap items-center justify-center gap-2 text-muted">
+    {% icon "wallet" 16 %} Balansingiz: <strong class="text-fg">{{ current_user.balance|money }}</strong> · <a href="/hamyon" class="link">Hamyon</a>
+    {% if plan_until %}<span aria-hidden="true">·</span> Tarifingiz: <strong class="text-success">{{ current.title }}</strong>, {{ plan_until|uzdate }} gacha{% endif %}
+  </p>
+  {% if master.status == "pending" %}
+  <p class="alert alert-info mx-auto mb-6 max-w-3xl">{% icon "info" 18 "mt-px flex-none" %}<span>Arizangiz tekshiruvda. Tarifni hozir olishingiz mumkin — imkoniyatlari darhol ochiladi, ro'yxatda esa tasdiqlangach ko'rinasiz.</span></p>
+  {% endif %}
+
+  <div class="grid items-stretch gap-6 md:grid-cols-3 md:gap-3.5 lg:gap-5">
+    {% for plan in master_plans %}
+    <article class="card relative flex flex-col px-6 py-7 md:px-[18px] lg:px-6{% if plan.key == 'usta_pro' %} border-2 !border-accent{% endif %}" id="{{ plan.key|default:'start' }}">
+      {% if plan.key == "usta_pro" %}<span class="absolute -top-3 left-6 rounded-full bg-accent px-3 py-1 text-[12.5px] font-bold text-on-accent">Eng ommabop</span>{% endif %}
+      <h2 class="flex items-center gap-2 text-lg font-bold">{{ plan.title }}{% if plan.badge %} <span class="badge badge-success text-[12px]">{% icon "badge-check" 12 %} {{ plan.badge }}</span>{% endif %}</h2>
+      <p class="mt-3 font-head text-[34px] font-extrabold tracking-tight">{{ plan.price|number }} <small class="text-base font-semibold text-muted">so'm{% if plan.price %} / {{ days }} kun{% endif %}</small></p>
+      <p class="mt-1 text-[15px] text-muted">{{ plan.description }}</p>
+      <ul class="mb-6 mt-5 grid gap-2.5 border-t border-line pt-5">
+        {% for feature in plan.features %}<li class="flex items-start gap-2.5 text-[15px]">{% icon "check" 16 "mt-0.5 flex-none text-success" %} {{ feature }}</li>{% endfor %}
+      </ul>
+      <div class="mt-auto">
+        {% if not plan.price %}
+          {% if current_level == 0 %}<p class="badge badge-success w-full justify-center py-2">{% icon "check-circle2" 16 %} Hozirgi tarifingiz</p>{% else %}<p class="text-center text-sm text-muted">Pullik tarif tugagach shu tarifga qaytasiz</p>{% endif %}
+        {% elif plan.level < current_level %}
+          <p class="text-center text-sm text-muted">Sizda yuqoriroq tarif faol</p>
+        {% else %}
+          {% if plan.key == current.key %}<p class="badge badge-success mb-2 w-full justify-center py-2">{% icon "check-circle2" 16 %} Faol · {{ plan_until|uzdate }} gacha</p>{% endif %}
+          <form method="post" action="/narxlar">
+            {% csrf_token %}
+            <input type="hidden" name="plan" value="{{ plan.key }}">
+            <button type="submit" class="btn btn-block {% if plan.key == 'usta_pro' %}btn-primary{% else %}btn-secondary{% endif %}" data-pending="To'lanmoqda..." data-confirm="Balansingizdan {{ plan.price|money }} yechiladi ({{ days }} kun). Davom etasizmi?">
+              {% icon "wallet" 16 %} {% if plan.key == current.key %}{{ days }} kunga uzaytirish{% else %}Balansdan to'lash{% endif %} · {{ plan.price|money }}
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+
+  <p class="alert alert-info mx-auto mt-8 max-w-3xl">
+    {% icon "info" 18 "mt-px flex-none" %}
+    <span>Tarif balansdan to'lanadi va darhol faollashadi, {{ days }} kun amal qiladi. Faol tarifni uzaytirsangiz, kunlar qo'shiladi. Muddati tugagach, profilingiz bepul «Start» tarifida qoladi: portfoliodagi rasmlar o'chmaydi, faqat yangisini qo'shib bo'lmaydi.</span>
+  </p>
+  <p class="mt-4 text-center text-sm text-muted">Smeta yoki 3D dizayn kerakmi? <a href="/narxlar?mijoz=1" class="link">Mijozlar tariflari</a></p>
+</div>
+{% endblock %}

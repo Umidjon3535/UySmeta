@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Jihozlash loyihasi · UySmeta{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-10">
+  <div class="no-print mb-5 flex flex-wrap items-center justify-between gap-3">
+    <a href="/ai-loyiha" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-accent">{% icon "arrow-left" 16 %} Yangi loyiha</a>
+    <p class="text-sm text-muted">{{ design.created_at|uzdate }} · {{ design.region|region_name }} narxlarida</p>
+  </div>
+
+  {# Variantlar: shu xonaning boshqa jihozlash variantlari va «Boshqa variant» tugmasi #}
+  {% if family or can_variant %}
+  <section class="no-print card mb-5 flex flex-wrap items-center justify-between gap-3 p-4 sm:px-5" aria-label="Variantlar">
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-sm font-semibold">{% icon "layers" 16 "inline text-accent" %} Variantlar:</span>
+      {% for d in family %}
+      <a href="/ai-loyiha/{{ d.public_id }}" class="inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition-colors {% if d.id == design.id %}border-accent bg-accent text-on-accent{% else %}border-line hover:border-accent{% endif %}"{% if d.id == design.id %} aria-current="page"{% endif %}>
+        {{ d.variant }}{% if d.status == "processing" %} <span class="bar-loader bar-loader-sm" aria-hidden="true"><span></span></span>{% elif d.status == "done" and d.id != design.id %} <span class="font-normal text-muted tabular-nums">{{ d.total|money }}</span>{% elif d.status == "failed" %} <span class="font-normal text-danger">xato</span>{% endif %}
+      </a>
+      {% empty %}
+      <span class="text-sm text-muted">Yoqmasa — AI shu xonani boshqacha jihozlab beradi</span>
+      {% endfor %}
+    </div>
+    {% if can_variant %}
+    <form method="post" action="/ai-loyiha/{{ design.public_id }}">
+      {% csrf_token %}
+      <input type="hidden" name="_action" value="variant">
+      <button type="submit" class="btn btn-primary" data-pending="AI ga yuborilmoqda...">{% icon "refresh-cw" 16 %} Boshqa variant</button>
+    </form>
+    {% elif family|length >= max_variants %}
+    <p class="text-sm text-muted">Bir xona uchun {{ max_variants }} tagacha variant</p>
+    {% endif %}
+    {% if rate_limited %}<p class="w-full text-sm text-danger" role="alert">Bir soatda juda ko'p loyiha so'raldi. Keyinroq urinib ko'ring.</p>{% endif %}
+  </section>
+  {% endif %}
+
+  {% if design.status == "processing" %}
+  <section class="card grid place-items-center gap-3 px-6 py-16 text-center" data-design-status="/api/ai-loyiha/{{ design.public_id }}" aria-live="polite">
+    <span class="bar-loader" aria-hidden="true"><span></span></span>
+    <p class="font-head text-lg font-bold">AI xonangizni ko'rmoqda...</p>
+    <p class="max-w-sm text-muted">Mos narsalar tanlanmoqda va narxlar hisoblanmoqda. Odatda 20–60 soniya. Sahifa o'zi yangilanadi.</p>
+  </section>
+  {% elif design.status == "failed" %}
+  <section class="card grid place-items-center gap-3 px-6 py-14 text-center">
+    {% icon "circle-alert" 32 "text-danger" %}
+    <p class="font-head text-lg font-bold">Loyihani tayyorlab bo'lmadi</p>
+    <p class="max-w-md text-muted">{{ design.error }}</p>
+    <a href="/ai-loyiha" class="btn btn-primary mt-2">Qayta urinish</a>
+  </section>
+  {% else %}
+
+  {# Xonangiz — loyiha bo'yicha jihozlangan holda: 3D sahna aynan shu rasm perspektivasida (static/js/room3d.js) #}
+  <section id="real" class="card overflow-hidden">
+    {% if not can_3d %}
+    <div class="relative">
+      <img src="{{ design.photo|photo_url }}" alt="Xonangiz" class="block w-full opacity-50">
+      <div class="absolute inset-0 grid place-items-center p-6 text-center">
+        <div class="grid max-w-md place-items-center gap-2 rounded-[14px] bg-card px-6 py-5 shadow">
+          {% icon "sparkles" 30 "text-accent" %}
+          <p class="font-head text-lg font-bold">Xonangizni jihozlangan holda ko'ring</p>
+          <p class="text-sm text-muted">Loyihadagi pol, devor, ship pardozi va barcha mebellar shu rasmdagi xonaga joylashtiriladi, har biri raqami va narxi bilan.</p>
+          <a href="/narxlar?kerak=design3d" class="btn btn-primary mt-1">{% icon "wand2" 16 %} "3D dizayn" tarifi bilan ochish</a>
+        </div>
+      </div>
+    </div>
+
+    {% elif not scene %}
+    <div class="relative" data-geometry-status="/api/ai-loyiha/{{ design.public_id }}/real" aria-live="polite">
+      <img src="{{ design.photo|photo_url }}" alt="Xonangiz" class="block w-full opacity-40">
+      <div class="absolute inset-0 grid place-items-center p-6 text-center">
+        <div class="grid place-items-center gap-2 rounded-[14px] bg-card px-6 py-5 shadow">
+          <span class="bar-loader" aria-hidden="true"><span></span></span>
+          <p class="font-head text-lg font-bold">Xonangiz o'lchanmoqda...</p>
+          <p class="max-w-sm text-sm text-muted">Devor burchaklari, deraza va eshiklar aniqlanmoqda, so'ng xona loyiha bo'yicha jihozlanadi. 5–30 soniya.</p>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    {# Ikki ko'rinish: Real — AI chizgan haqiqiy fotodek xona; 3D — xona rasmi ustida 3D jihozlar (room3d.js composite) #}
+    {% with show_real=ai_ready %}
+    <div class="no-print flex gap-1 border-b border-line p-2" role="tablist" aria-label="Ko'rinish">
+      {% if not photo_mode %}
+      {# Real ko'rinish yangilanmoqda (core/render.py render_image_enabled) — bosilsa xabar chiqadi, 3D qoladi #}
+      <button type="button" class="segment flex-1 gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold opacity-60" data-real-off>{% icon "sparkles" 14 "inline" %} Real ko'rinish</button>
+      <button type="button" role="tab" class="segment flex-1 gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold" data-view-tab="3d" aria-selected="true">{% icon "box" 14 "inline" %} 3D ko'rinish</button>
+      {% else %}
+      <button type="button" role="tab" class="segment flex-1 gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold" data-view-tab="real" aria-selected="{% if show_real or design.render_status == 'processing' %}true{% else %}false{% endif %}">{% icon "sparkles" 14 "inline" %} Real ko'rinish</button>
+      <button type="button" role="tab" class="segment flex-1 gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold" data-view-tab="3d" aria-selected="{% if show_real or design.render_status == 'processing' %}false{% else %}true{% endif %}">{% icon "box" 14 "inline" %} 3D ko'rinish</button>
+      {% endif %}
+    </div>
+
+    {% if photo_mode %}
+    <div data-view-panel="real"{% if not show_real and design.render_status != "processing" %} hidden{% endif %}>
+      {% if ai_ready %}
+      <img src="{{ design.render_photo|photo_url }}" alt="Xonangiz loyiha bo'yicha jihozlangan holda (AI)" class="block w-full">
+      <div class="no-print flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3">
+        {% if design.render_source == "prompt" %}
+        <p class="text-sm text-muted">AI namunasi: loyihangizdagi variantlar bilan jihozlangan <strong class="text-fg">o'xshash xona</strong> — xonangizning o'zi emas. Xonangizning o'zi «3D ko'rinish» tabida.</p>
+        {% else %}
+        <p class="text-sm text-muted">Xonangiz loyihadagi mahsulotlar bilan — haqiqiy fotosurat ko'rinishida. Narxlar pastda.</p>
+        {% endif %}
+        <div class="flex flex-wrap gap-2">
+          <a href="{{ design.render_photo|photo_url }}" download class="btn btn-secondary btn-sm">Yuklab olish</a>
+          <button type="button" class="btn btn-secondary btn-sm" data-view-tab="3d">{% icon "box" 14 %} 3D</button>
+        </div>
+      </div>
+      {% else %}
+      <div class="relative">
+        <img src="{{ design.photo|photo_url }}" alt="Xonangiz" class="block w-full opacity-40">
+        <div class="absolute inset-0 grid place-items-center p-6 text-center">
+          <div class="grid max-w-md place-items-center gap-2 rounded-[14px] bg-card px-6 py-5 shadow"{% if design.render_status == "processing" %} data-render-status="/api/ai-loyiha/{{ design.public_id }}/real" aria-live="polite"{% endif %}>
+            {% if design.render_status == "processing" %}
+            <span class="bar-loader" aria-hidden="true"><span></span></span>
+            <p class="font-head text-lg font-bold">AI xonangizni jihozlamoqda...</p>
+            <p class="text-sm text-muted">Haqiqiy fotosurat ko'rinishi 20–60 soniyada tayyor bo'ladi. Shu orada 3D ko'rinishni ko'ring.</p>
+            {% else %}
+            {% icon "sparkles" 30 "text-accent" %}
+            <p class="font-head text-lg font-bold">Real ko'rinish hozircha tayyor emas</p>
+            {% if current_user.role == "admin" and design.render_error %}
+            <p class="text-sm text-danger">{{ design.render_error }}</p>
+            {% else %}
+            <p class="text-sm text-muted">AI rasm xizmati vaqtincha ishlamayapti. Xonangizning 3D ko'rinishi tayyor.</p>
+            {% endif %}
+            {% endif %}
+            <div class="mt-1 flex flex-wrap justify-center gap-2">
+              <button type="button" class="btn btn-primary" data-view-tab="3d">{% icon "box" 16 %} 3D ko'rinish</button>
+              {% if photo_mode and design.render_status != "processing" %}
+              <form method="post" action="/ai-loyiha/{{ design.public_id }}/real" data-ai-form{% if not design.render_status and not request.GET.limit %} data-auto{% endif %}>{% csrf_token %}
+                <button type="submit" class="btn btn-secondary">{% icon "wand2" 16 %} Qayta urinish</button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div data-view-panel="3d"{% if photo_mode and show_real or photo_mode and design.render_status == "processing" %} hidden{% endif %}>
+      <div class="relative select-none bg-bg" data-room>
+        <img src="{{ design.photo|photo_url }}" alt="Xonangizning hozirgi holati" class="block w-full" data-photo>
+        <canvas class="absolute inset-0 h-full w-full" data-composite aria-label="Xonangiz loyiha bo'yicha jihozlangan holda"></canvas>
+        <div class="absolute inset-0" data-marks></div>
+        <svg class="absolute inset-0 h-full w-full" data-corners hidden viewBox="0 0 1000 1000" preserveAspectRatio="none">
+          <polygon fill="rgb(37 99 235 / .12)" stroke="#fff" stroke-width="3" vector-effect="non-scaling-stroke"></polygon>
+        </svg>
+        <div class="room-loading absolute inset-0 grid place-content-center justify-items-center gap-3 text-sm font-semibold text-white" data-loading><span class="bar-loader" aria-hidden="true"><span></span></span><span>Xona jihozlanmoqda...</span></div>
+      </div>
+      <div class="no-print flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3" data-room-tools>
+        <p class="text-sm text-muted" data-room-hint>Sizning xonangiz, loyihadagi narsalar bilan. Raqamni bosing — pastda shu narsaning narxi.</p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="btn btn-secondary btn-sm" data-toggle-before aria-pressed="false">{% icon "image-icon" 14 %} <span>Hozirgi holat</span></button>
+          <button type="button" class="btn btn-secondary btn-sm" data-download>Yuklab olish</button>
+          {% if can_edit_geometry %}<button type="button" class="btn btn-secondary btn-sm" data-edit-corners>{% icon "pencil" 14 %} <span>Burchaklarni to'g'rilash</span></button>{% endif %}
+          <a href="/ai-loyiha/{{ design.public_id }}/3d" class="btn btn-secondary btn-sm">{% icon "box" 14 %} Aylantirib ko'rish</a>
+        </div>
+      </div>
+      {% if geometry and not geometry.auto %}<p class="border-t border-line px-4 py-2 text-sm text-muted" data-corner-note>Agar yangi pol va devorlar xonaga aniq tushmagan bo'lsa, "Burchaklarni to'g'rilash" ni bosing va 4 ta nuqtani orqa devorning burchaklariga suring.</p>{% endif %}
+    </div>
+    {% endwith %}
+    {{ scene|json_script:"scene-data" }}
+    {{ geometry|json_script:"geometry-data" }}
+    {% endif %}
+  </section>
+  {% if request.GET.limit %}<p class="mt-3 rounded-lg border border-line px-4 py-3 text-sm text-danger">Bir soatda juda ko'p rasm so'raldi. Keyinroq urinib ko'ring</p>{% endif %}
+
+  <div class="mt-6 grid items-start gap-6 lg:grid-cols-[1fr_340px]">
+    <div class="min-w-0">
+      {% for section in sections %}
+      {# Bo'lim yopiq: sarlavha va jami ko'rinadi, «Ko'rsatish» bosilganda narsalar ochiladi (#item-N havolasi ham ochadi — app.js) #}
+      <details class="card group {% if not forloop.first %}mt-4 {% endif %}" aria-label="{{ section.label }}">
+        <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-x-4 gap-y-1 p-5 sm:px-6 [&::-webkit-details-marker]:hidden">
+          <span class="flex items-baseline gap-2">
+            <h2 class="text-lg font-extrabold">{{ section.label }}</h2>
+            <span class="text-sm text-muted">{{ section.items|length }} ta</span>
+          </span>
+          <span class="flex items-center gap-3">
+            <strong class="font-head tabular-nums">{{ section.total|money }}</strong>
+            <span class="no-print inline-flex items-center gap-1 text-sm font-semibold text-accent"><span class="group-open:hidden">Ko'rsatish</span><span class="hidden group-open:inline">Yashirish</span>{% icon "chevron-down" 18 "transition-transform group-open:rotate-180" %}</span>
+          </span>
+        </summary>
+        <ul class="grid gap-3 border-t border-line px-5 pb-5 pt-4 sm:px-6">
+          {% for item in section.items %}
+          <li {% if item.n %}id="item-{{ item.n }}" data-item="{{ item.n }}" {% endif %}class="flex scroll-mt-24 gap-3 rounded-lg border-b border-line pb-3 last:border-0 last:pb-0">
+            {% if item.n %}
+            <a href="#real" class="room-num" data-goto="{{ item.n }}" title="Rasmda ko'rsatish">{{ item.n }}</a>
+            {% else %}
+            <span class="room-num room-num-muted" title="{% if item.category == 'ish' %}Usta ishi{% else %}Rasmda ko'rinmaydi{% endif %}">{% if item.category == "ish" %}{% icon "hammer" 14 %}{% else %}{% icon "package-check" 14 %}{% endif %}</span>
+            {% endif %}
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+                <p class="min-w-0 flex-1 font-semibold">{{ item.name }}{% if item.category == "ish" %} <span class="badge px-2 py-0 text-[11px]">usta ishi</span>{% endif %}{% if item.styleName %}<span class="mt-0.5 block text-sm font-normal text-accent">{{ item.styleName }}</span>{% endif %}</p>
+                <strong class="whitespace-nowrap tabular-nums">{{ item.total|money }}</strong>
+              </div>
+              <p class="mt-0.5 text-sm text-muted">{{ item.quantity|floatformat:"-1" }} {{ item.unit }} × {{ item.unitPrice|money }}</p>
+              {% if item.placement %}<p class="mt-1 text-sm">{{ item.placement }}</p>{% endif %}
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </details>
+      {% endfor %}
+
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-[14px] bg-accent-soft px-[18px] py-4 font-head">
+        <span class="text-base font-bold">Umumiy jami</span>
+        <strong class="text-[1.4rem] font-extrabold tabular-nums text-accent">{{ plan.total|money }}</strong>
+      </div>
+
+      {% if plan.missing %}
+      <section class="card mt-4 p-5 sm:p-6">
+        <h2 class="text-lg font-extrabold">Bazada narxi yo'q narsalar</h2>
+        <p class="mt-1 text-sm text-muted">Bular umumiy narxga kirmagan.</p>
+        <ul class="mt-3 grid gap-1.5 text-sm">
+          {% for m in plan.missing %}<li>• <strong>{{ m.name }}</strong> — {{ m.quantity|floatformat:"-1" }} {{ m.unit }}{% if m.reason %} <span class="text-muted">({{ m.reason }})</span>{% endif %}</li>{% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </div>
+
+    <aside class="grid gap-4 lg:sticky lg:top-[calc(var(--header-h)+16px)]">
+      <section class="card p-5">
+        <p class="inline-flex items-center gap-1.5 text-sm font-semibold text-success">{% icon "check-circle2" 16 %} Loyiha tayyor</p>
+        <p class="mt-1 text-sm text-muted">Umumiy narx</p>
+        <p class="font-head text-[1.9rem] font-extrabold leading-tight tabular-nums">{{ plan.total|money }}</p>
+        <ul class="mt-3 grid gap-1.5 border-t border-line pt-3 text-sm">
+          {% for c in costs %}<li class="flex justify-between gap-3"><span class="text-muted">{{ c.label }} <span class="whitespace-nowrap">({{ c.count }} ta)</span></span><strong class="whitespace-nowrap tabular-nums">{{ c.total|money }}</strong></li>{% endfor %}
+          <li class="flex justify-between gap-3 border-t border-line pt-1.5 font-bold"><span>Jami</span><span class="tabular-nums">{{ plan.total|money }}</span></li>
+        </ul>
+        <div class="no-print mt-4 grid gap-2">
+          <a href="/ai-loyiha/{{ design.public_id }}/pdf" class="btn btn-primary">{% icon "file-text" 16 %} PDF yuklab olish{% if not can_pdf %} <span class="badge px-2 py-0 text-[11px]">tarif</span>{% endif %}</a>
+          <a href="/ai-loyiha/{{ design.public_id }}/3d" class="btn btn-secondary">{% icon "box" 16 %} 3D ko'rinish{% if not can_3d %} <span class="badge px-2 py-0 text-[11px]">3D tarif</span>{% endif %}</a>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" class="btn btn-secondary" data-print>{% icon "printer" 16 %} Chop etish</button>
+            <a href="/ustalar" class="btn btn-secondary">{% icon "search" 16 %} Usta topish</a>
+          </div>
+          <button type="button" class="btn btn-secondary" data-share="/ai-loyiha/{{ design.public_id }}" hidden>{% icon "share2" 16 %} Ulashish</button>
+        </div>
+      </section>
+
+      <section class="card p-5">
+        <ul class="grid gap-2 text-sm">
+          <li class="flex justify-between gap-3"><span class="text-muted">Xona turi</span><strong class="text-right">{{ room_type_label }}</strong></li>
+          <li class="flex justify-between gap-3"><span class="text-muted">Pol maydoni</span><strong>{{ design.area|floatformat:"-1" }} m²</strong></li>
+          <li class="flex justify-between gap-3"><span class="text-muted">Ship balandligi</span><strong>{{ design.height|floatformat:"-2" }} m</strong></li>
+          {% if plan %}
+          <li class="flex justify-between gap-3"><span class="text-muted">Devor maydoni</span><strong>{% firstof plan.geometry.wall plan.geometry.wallArea %} m²</strong></li>
+          <li class="flex justify-between gap-3"><span class="text-muted">Perimetr</span><strong>{{ plan.geometry.perimeter|floatformat:"-1" }} m</strong></li>
+          {% endif %}
+          <li class="flex justify-between gap-3"><span class="text-muted">Derazalar / eshiklar</span><strong>{{ design.windows }} / {{ design.doors }}</strong></li>
+          <li class="flex justify-between gap-3"><span class="text-muted">Byudjet</span><strong>{{ budget_label }}</strong></li>
+        </ul>
+        {% if design.wishes %}<p class="mt-3 rounded-lg bg-bg px-3 py-2 text-sm"><span class="text-muted">So'rov:</span> {{ design.wishes }}</p>{% endif %}
+        {% if plan.layout %}
+        <p class="mt-3 flex items-center gap-1.5 text-sm font-bold text-accent">{% icon "layout-dashboard" 14 %} Joylashtirish</p>
+        <p class="mt-1 whitespace-pre-line text-sm">{{ plan.layout }}</p>
+        {% endif %}
+      </section>
+
+      <p class="flex items-start gap-2 text-xs text-muted">{% icon "info" 14 "mt-0.5 flex-none" %} Narxlar UySmeta bazasidagi {{ design.region|region_name }} narxlari (do'konlardagi joriy narxlar asosida).</p>
+    </aside>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block head %}
+<style>
+  .room-mark { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; width: 30px; height: 30px; border-radius: 999px; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border: 2px solid #fff; box-shadow: 0 2px 8px rgb(0 0 0 / .35); text-decoration: none; transition: transform .15s; }
+  .room-mark:hover, .room-mark.is-active { transform: translate(-50%, -50%) scale(1.25); z-index: 2; }
+  [data-room].show-before [data-composite], [data-room].show-before [data-marks], [data-room].editing [data-marks] { visibility: hidden; }
+  .room-loading { background: rgb(0 0 0 / .35); text-shadow: 0 1px 3px #000; }
+  .room-handle { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 999px; background: var(--accent); border: 3px solid #fff; box-shadow: 0 2px 8px rgb(0 0 0 / .45); cursor: grab; touch-action: none; z-index: 3; }
+  .room-num { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 999px; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; text-decoration: none; }
+  .room-num-muted { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  [data-item].is-active { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+</style>
+{% endblock %}
+
+{% block scripts %}
+{% if scene %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/RoundedBoxGeometry.js"></script>
+<script src="{% asset 'js/room3d.js' %}"></script>
+{% endif %}
+<script>
+(function () {
+  "use strict";
+  // Tayyor bo'lguncha holatni tekshirib turish
+  const poll = (url, key) => {
+    const tick = () => fetch(url, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => (d[key] === "processing" ? setTimeout(tick, 3000) : window.location.reload()))
+      .catch(() => setTimeout(tick, 5000));
+    setTimeout(tick, 3000);
+  };
+  const designBox = document.querySelector("[data-design-status]");
+  if (designBox) poll(designBox.dataset.designStatus, "status");
+  const geometryBox = document.querySelector("[data-geometry-status]");
+  if (geometryBox) poll(geometryBox.dataset.geometryStatus, "geometry");
+  const renderBox = document.querySelector("[data-render-status]");
+  if (renderBox) poll(renderBox.dataset.renderStatus, "status");
+
+  // Rasmdagi raqam va ro'yxatdagi narx bir-birini ko'rsatadi
+  const highlight = (n) => {
+    document.querySelectorAll(".is-active").forEach((el) => el.classList.remove("is-active"));
+    document.querySelectorAll(`[data-mark="${n}"], [data-item="${n}"]`).forEach((el) => el.classList.add("is-active"));
+  };
+  document.querySelectorAll("[data-goto]").forEach((el) => el.addEventListener("click", () => highlight(el.dataset.goto)));
+
+  // Real / 3D ko'rinish tablari
+  const showView = (name) => {
+    document.querySelectorAll("[data-view-panel]").forEach((p) => (p.hidden = p.dataset.viewPanel !== name));
+    document.querySelectorAll('[role="tab"][data-view-tab]').forEach((t) => t.setAttribute("aria-selected", String(t.dataset.viewTab === name)));
+  };
+  document.querySelectorAll("[data-view-tab]").forEach((b) => b.addEventListener("click", () => showView(b.dataset.viewTab)));
+  document.querySelectorAll("[data-real-off]").forEach((b) => b.addEventListener("click", () => {
+    if (window.showToast) window.showToast("Real ko'rinish hozircha ishlamayapti — yangilanmoqda. 3D ko'rinishdan foydalaning.", 4000);
+  }));
+
+  const room = document.querySelector("[data-room]");
+  if (!room) return;
+  const photo = room.querySelector("[data-photo]");
+  const canvas = room.querySelector("[data-composite]");
+  const marksBox = room.querySelector("[data-marks]");
+  const loading = room.querySelector("[data-loading]");
+  if (!window.THREE || !window.Room3D) { loading.textContent = "3D kutubxona yuklanmadi. Internet aloqasini tekshiring."; return; }
+  const data = JSON.parse(document.getElementById("scene-data").textContent);
+  const geometry = JSON.parse(document.getElementById("geometry-data").textContent);
+
+  function draw() {
+    try {
+      const layout = Room3D.solve(geometry, photo.naturalWidth, photo.naturalHeight, data.height, data.area);
+      const tags = Room3D.composite(canvas, photo, data, layout);
+      marksBox.innerHTML = "";
+      for (const t of tags) {
+        const a = document.createElement("a");
+        a.href = "#item-" + t.n; a.className = "room-mark"; a.dataset.mark = t.n; a.textContent = t.n;
+        a.style.left = t.x + "%"; a.style.top = t.y + "%";
+        a.setAttribute("aria-label", t.n + "-raqamli narsa narxi");
+        a.addEventListener("click", () => highlight(t.n));
+        marksBox.appendChild(a);
+      }
+      loading.hidden = true;
+    } catch (error) {
+      console.error(error);
+      loading.textContent = "Xonani chizib bo'lmadi. Burchaklarni to'g'rilab ko'ring.";
+      loading.hidden = false;
+    }
+  }
+  // Hamkor mahsulotlarining haqiqiy fotolari oldindan yuklanadi, keyin xona chiziladi
+  const photosReady = Room3D.loadPhotos(data);
+  const photoLoaded = photo.complete && photo.naturalWidth ? Promise.resolve() : new Promise((r) => photo.addEventListener("load", r, { once: true }));
+  Promise.all([photosReady, photoLoaded]).then(() => requestAnimationFrame(() => {
+    draw();
+    // AI fotorealistik variant hali so'ralmagan bo'lsa — avtomatik (xato bersa, shu fotoli ko'rinish qoladi)
+    const auto = document.querySelector("[data-ai-form][data-auto]");
+    if (auto && loading.hidden) auto.requestSubmit();
+  }));
+
+  const toggle = document.querySelector("[data-toggle-before]");
+  toggle.addEventListener("click", () => {
+    const on = !room.classList.contains("show-before");
+    room.classList.toggle("show-before", on);
+    toggle.setAttribute("aria-pressed", String(on));
+    toggle.querySelector("span").textContent = on ? "Jihozlangan holat" : "Hozirgi holat";
+  });
+  document.querySelector("[data-download]").addEventListener("click", () => {
+    const link = document.createElement("a");
+    link.download = "uysmeta-xona-{{ design.public_id }}.jpg";
+    link.href = canvas.toDataURL("image/jpeg", 0.92);
+    link.click();
+  });
+
+  // AI variant: avval shu 3D kompozitsiya serverga yuboriladi — AI aynan uni fotorealistik qiladi
+  const aiForm = document.querySelector("[data-ai-form]");
+  if (aiForm) aiForm.addEventListener("submit", (e) => {
+    if (aiForm.dataset.sent) return;
+    e.preventDefault();
+    aiForm.querySelector("button").disabled = true;
+    canvas.toBlob((blob) => {
+      const body = new FormData();
+      body.append("image", blob, "kompozit.jpg");
+      fetch("/api/ai-loyiha/{{ design.public_id }}/kompozit", { method: "POST", headers: { "X-CSRFToken": "{{ csrf_token }}" }, body })
+        .catch(() => null)
+        .finally(() => { aiForm.dataset.sent = "1"; aiForm.submit(); });
+    }, "image/jpeg", 0.92);
+  });
+
+  // Burchaklarni surish: 4 nuqta — orqa devorning shift va pol bilan tutashgan burchaklari
+  const edit = document.querySelector("[data-edit-corners]");
+  if (!edit) return;
+  const svg = room.querySelector("[data-corners]"), polygon = svg.querySelector("polygon");
+  const hint = document.querySelector("[data-room-hint]"), hintText = hint.textContent;
+  const names = ["Chap-yuqori", "O'ng-yuqori", "O'ng-past", "Chap-past"];
+  let handles = [], saved = null, timer = null;
+  const redraw = () => { clearTimeout(timer); timer = setTimeout(draw, 60); };
+  const place = () => {
+    geometry.back.forEach(([x, y], i) => { handles[i].style.left = x * 100 + "%"; handles[i].style.top = y * 100 + "%"; });
+    polygon.setAttribute("points", geometry.back.map(([x, y]) => x * 1000 + "," + y * 1000).join(" "));
+  };
+  function start() {
+    saved = JSON.parse(JSON.stringify(geometry.back));
+    room.classList.add("editing");
+    svg.hidden = false;
+    handles = geometry.back.map((_, i) => {
+      const h = document.createElement("span");
+      h.className = "room-handle";
+      h.setAttribute("aria-label", names[i] + " burchak");
+      h.addEventListener("pointerdown", (e) => {
+        h.setPointerCapture(e.pointerId);
+        const move = (ev) => {
+          const r = room.getBoundingClientRect();
+          geometry.back[i] = [Math.min(1.5, Math.max(-0.5, (ev.clientX - r.left) / r.width)), Math.min(1.5, Math.max(-0.5, (ev.clientY - r.top) / r.height))];
+          place(); redraw();
+        };
+        const up = () => { h.removeEventListener("pointermove", move); h.removeEventListener("pointerup", up); };
+        h.addEventListener("pointermove", move);
+        h.addEventListener("pointerup", up);
+      });
+      room.appendChild(h);
+      return h;
+    });
+    place();
+    hint.textContent = "Ko'k nuqtalarni orqa devorning 4 burchagiga suring: shift va pol bilan tutashgan joylarga.";
+    edit.querySelector("span").textContent = "Saqlash";
+  }
+  async function finish() {
+    edit.disabled = true;
+    try {
+      const res = await fetch("/api/ai-loyiha/{{ design.public_id }}/burchaklar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+        body: JSON.stringify({ back: geometry.back }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || res.status);
+      const note = document.querySelector("[data-corner-note]");
+      if (note) note.remove();
+      hint.textContent = hintText;
+    } catch (error) {
+      geometry.back = saved;
+      draw();
+      hint.textContent = "Saqlab bo'lmadi: " + error.message;
+    }
+    handles.forEach((h) => h.remove());
+    handles = [];
+    svg.hidden = true;
+    room.classList.remove("editing");
+    edit.querySelector("span").textContent = "Burchaklarni to'g'rilash";
+    edit.disabled = false;
+  }
+  edit.addEventListener("click", () => (handles.length ? finish() : start()));
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% comment %}
+Telegram orqali kirish va ro'yxatdan o'tish (parolsiz). Tugma botni ochadi; botda raqam yuborilgach sahifa o'zi kiritadi
+(app.js: [data-tg-login]). JS bo'lmasa — oddiy POST, keyin "Botni ochish" havolasi va "Davom etish" tugmasi.
+{% endcomment %}
+<div class="grid gap-4" data-tg-login{% if state.data.tgToken %} data-token="{{ state.data.tgToken }}" data-url="{{ state.data.tgUrl }}"{% endif %}>
+  {% if state.message and not state.ok %}{% form_message state %}{% endif %}
+  <p class="hidden rounded-[12px] bg-danger-soft px-3 py-2 text-sm text-danger" data-tg-error role="alert"></p>
+
+  {% if not telegram_ready %}
+  <p class="alert alert-info">{% icon "info" 18 "mt-px flex-none" %}<span>Telegram bot hozircha ulanmagan. Parol bilan kiring.</span></p>
+  {% else %}
+  {# 1. Boshlash #}
+  <div class="grid gap-4" data-tg-step="start"{% if state.data.tgToken %} hidden{% endif %}>
+    <ol class="grid gap-2.5 text-[15px]">
+      <li class="flex gap-3"><span class="grid size-6 flex-none place-items-center rounded-full bg-accent-soft text-sm font-bold text-accent">1</span><span>Tugmani bosing — UySmeta boti ochiladi</span></li>
+      <li class="flex gap-3"><span class="grid size-6 flex-none place-items-center rounded-full bg-accent-soft text-sm font-bold text-accent">2</span><span>Botda <strong>«Start»</strong>, so'ng <strong>«📱 Raqamimni yuborish»</strong> ni bosing</span></li>
+      <li class="flex gap-3"><span class="grid size-6 flex-none place-items-center rounded-full bg-accent-soft text-sm font-bold text-accent">3</span><span>Shu sahifaga qayting — avtomatik kirasiz</span></li>
+    </ol>
+    <form method="post" action="/kirish/telegram" data-tg-start>
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      <button type="submit" class="btn btn-lg btn-block border-0 bg-[#229ED9] text-white hover:bg-[#1c8cc2]" data-pending="Bot ochilmoqda...">{% icon "send" 18 %} Telegram orqali kirish</button>
+    </form>
+    <p class="hint text-center">Hisobingiz bo'lmasa, bot o'zi ro'yxatdan o'tkazadi — parol shart emas.</p>
+  </div>
+
+  {# 2. Botda tasdiqlash kutilmoqda #}
+  <div class="grid gap-4" data-tg-step="wait"{% if not state.data.tgToken %} hidden{% endif %}>
+    <div class="grid place-items-center gap-3 rounded-[14px] border border-accent/40 bg-accent-soft/50 px-4 py-6 text-center" aria-live="polite">
+      <span class="bar-loader" aria-hidden="true"><span></span></span>
+      <p class="font-semibold" data-tg-status>Telegram'da raqamingizni yuboring…</p>
+      <p class="text-sm text-muted">Botda <strong>«📱 Raqamimni yuborish»</strong> tugmasini bosing. Tasdiqlangach shu sahifa o'zi yangilanadi.</p>
+    </div>
+    <a href="{{ state.data.tgUrl|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-block border-0 bg-[#229ED9] text-white hover:bg-[#1c8cc2]" data-tg-open>{% icon "send" 18 %} Botni ochish</a>
+    {% if state.data.tgToken %}<a href="/kirish/telegram/{{ state.data.tgToken }}" class="btn btn-secondary btn-block" data-tg-continue>Botda tasdiqladim — davom etish</a>{% endif %}
+    <button type="button" class="link justify-self-center text-sm" data-tg-restart>Qaytadan boshlash</button>
+  </div>
+  {% endif %}
+
+  <a href="/kirish{{ register_query }}" class="btn btn-ghost btn-block" data-auth-mode="password">{% icon "arrow-left" 16 %} Parol bilan kirish</a>
+</div>

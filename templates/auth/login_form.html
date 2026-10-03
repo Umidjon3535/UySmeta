@@ -1,0 +1,17 @@
+{% comment %}
+Kirish formasi — /kirish sahifasida va bosh sahifadagi aylanadigan kartada bir xil.
+p — id prefiksi (bir sahifada ikki forma bo'lsa takrorlanmasin). data-auth-form: JS sahifani yangilamasdan yuboradi.
+{% endcomment %}
+<form method="post" action="/kirish" class="grid gap-4" novalidate data-auth-form>
+  {% csrf_token %}
+  <input type="hidden" name="_p" value="{{ p }}">
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+  {% if claim %}<input type="hidden" name="claim" value="{{ claim }}">{% endif %}
+  {% form_message state %}
+  {% phone_field state prefix=p %}
+  {% field state "password" "Parol" type="password" placeholder="Parolni kiriting" maxlength=128 autocomplete="current-password" required=True prefix=p %}
+  <div class="-mt-2 text-right"><a href="/parolni-tiklash" class="link text-sm">Parolni unutdingizmi?</a></div>
+  <button type="submit" class="btn btn-primary btn-lg btn-block" data-pending="Kirilmoqda...">Kirish {% icon "arrow-right" 18 %}</button>
+  <div class="flex items-center gap-3 text-sm text-muted" aria-hidden="true"><span class="h-px flex-1 bg-line"></span>yoki<span class="h-px flex-1 bg-line"></span></div>
+  <a href="/kirish/telegram{{ register_query }}" class="btn btn-secondary btn-lg btn-block" data-auth-mode="telegram">{% icon "send" 18 "text-[#229ED9]" %} Telegram orqali kirish</a>
+</form>

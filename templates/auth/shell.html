@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{# Kirish / ro'yxatdan o'tish sahifalari: bosh sahifadagi bilan bir xil tablar #}
+{% block content %}
+<div class="container-page flex justify-center py-10 md:py-16">
+  <div class="w-full max-w-[440px]">
+    <h1 class="font-head text-[28px] font-extrabold tracking-tight sm:text-[32px]">{% block heading %}Tizimga kirish{% endblock %}</h1>
+    <p class="mb-7 mt-1 text-muted">{% block subtitle %}Hisobingizga kiring yoki bepul ro'yxatdan o'ting{% endblock %}</p>
+    {% block form %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

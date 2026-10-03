@@ -1,0 +1,39 @@
+{# Smeta natijasi. Parametrlar: result, title, label, sample #}
+<div class="flex flex-col gap-4 border-b border-line pb-5 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
+  <div>
+    <p class="inline-flex items-center gap-1.5 text-sm font-semibold {% if sample %}text-muted{% else %}text-success{% endif %}">
+      {% if sample %}{% icon "info" 16 %}{% else %}{% icon "check-circle2" 16 %}{% endif %} {{ label|default:"Smeta tayyor" }}
+    </p>
+    {% if title %}<p class="mt-1 font-head text-lg font-bold">{{ title }}</p>{% endif %}
+    <p class="mt-1.5 font-head text-[clamp(1.9rem,1.2rem+2.6vw,2.9rem)] font-extrabold leading-[1.1] tracking-tight">Taxminiy jami: {{ result.total|money }}</p>
+    <p class="mt-1 text-[15px] text-muted">{{ result|describe_room }}</p>
+  </div>
+  <ul class="flex flex-wrap gap-2">
+    <li class="inline-flex items-center gap-2 rounded-lg border border-line bg-bg px-3 py-2 text-sm">
+      <span class="text-muted">{% icon "ruler" 16 %}</span><span class="text-muted">Maydon:</span>
+      <strong class="font-semibold">{% if result.roomType == "apartment" %}{{ result.floorArea|number }} m²{% else %}pol {{ result.floorArea|number }} m² · devor {{ result.wallArea|number }} m²{% endif %}</strong>
+    </li>
+    <li class="inline-flex items-center gap-2 rounded-lg border border-line bg-bg px-3 py-2 text-sm">
+      <span class="text-muted">{% icon "sparkles" 16 %}</span><span class="text-muted">Sifat:</span>
+      <strong class="font-semibold">{{ result.quality|quality_label }}</strong>
+    </li>
+    <li class="inline-flex items-center gap-2 rounded-lg border border-line bg-bg px-3 py-2 text-sm">
+      <span class="text-muted">{% icon "clock" 16 %}</span><span class="text-muted">Muddat:</span>
+      <strong class="font-semibold">{{ result.duration }}</strong>
+    </li>
+  </ul>
+</div>
+
+<div class="mt-6 grid gap-7 lg:grid-cols-2">
+  {% include "includes/lines_table.html" with icon_name="box" title="Materiallar" h1="Nomi" h2="Miqdori" rows=result.materials total_label="Materiallar jami" total=result.materialsTotal %}
+  {% include "includes/lines_table.html" with icon_name="hammer" title="Usta ish haqi" h1="Ish turi" h2="Hajmi" rows=result.labor total_label="Ish haqi jami" total=result.laborTotal %}
+</div>
+
+<div class="mt-6 flex flex-wrap items-center justify-between gap-2 rounded-[14px] bg-accent-soft px-[18px] py-4 font-head">
+  <span class="text-base font-bold">Umumiy jami</span>
+  <strong class="text-[clamp(1.25rem,1rem+1vw,1.4rem)] font-extrabold tabular-nums text-accent">{{ result.total|money }}</strong>
+</div>
+
+<p class="mt-3.5 flex items-start gap-2 text-sm text-muted">
+  {% icon "info" 16 "mt-0.5 flex-none" %} Hisob taxminiy, real narx ±10% farq qilishi mumkin.
+</p>

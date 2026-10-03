@@ -1,0 +1,11 @@
+<div class="mx-auto grid max-w-[780px] gap-3">
+  {% for item in faq_items %}
+  <details class="card overflow-hidden">
+    <summary class="flex min-h-[60px] cursor-pointer list-none items-center justify-between gap-4 rounded-[14px] px-5 py-4 font-head text-[17px] font-bold hover:text-accent">
+      {{ item.q }}
+      {% icon "chevron-down" 20 "faq-chevron flex-none text-muted transition-transform duration-200" %}
+    </summary>
+    <p class="faq-answer px-5 pb-[18px] text-muted">{{ item.a }}</p>
+  </details>
+  {% endfor %}
+</div>

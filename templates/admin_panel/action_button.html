@@ -1,0 +1,8 @@
+{# Bir bosishda holatni o'zgartiradigan tugma (JS'siz ham ishlaydi). Parametrlar: action, id, status, variant, text #}
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="_action" value="{{ action }}">
+  <input type="hidden" name="id" value="{{ id }}">
+  <input type="hidden" name="status" value="{{ status }}">
+  <button type="submit" class="btn btn-{{ variant|default:'secondary' }} btn-sm">{{ text }}</button>
+</form>

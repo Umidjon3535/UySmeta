@@ -1,0 +1,6 @@
+{% if state.message %}
+<p class="alert {% if state.ok %}alert-success{% else %}alert-error{% endif %}" role="{% if state.ok %}status{% else %}alert{% endif %}">
+  {% if state.ok %}{% icon "check-circle2" 18 "mt-px flex-none" %}{% else %}{% icon "circle-alert" 18 "mt-px flex-none" %}{% endif %}
+  <span>{{ state.message }}</span>
+</p>
+{% endif %}

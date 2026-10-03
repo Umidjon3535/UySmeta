@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Xonani jihozlash · UySmeta{% endblock %}
+{% block description %}Xona rasmini yuklang — AI xonani tahlil qilib, mos mebel, texnika, materiallar va ishlar ro'yxatini narxi bilan tayyorlaydi. «3D dizayn» tarifida xonaning 3D ko'rinishi.{% endblock %}
+
+{% block content %}
+{# AI bilan jihozlash: rasm → AI tahlili → ro'yxat va narx → (tarif bo'lsa) 3D ko'rinish #}
+<div class="container-page py-8 md:py-12">
+  <header class="mx-auto max-w-3xl text-center">
+    <span class="badge">{% icon "sparkles" 16 %} {% if ai_ready %}AI bilan jihozlash{% else %}Tezkor jihozlash{% endif %}</span>
+    <h1 class="page-title mt-3">Xonangizni AI jihozlab bersin</h1>
+    <p class="mt-3 text-lg text-muted">Xona rasmini yuklang va nima xohlayotganingizni yozing. AI xonani ko'rib, mos mebel, texnika va materiallarni tanlaydi, {{ catalog_count }} ta mahsulot narxi asosida hisoblab beradi.</p>
+  </header>
+
+  <ol class="mx-auto mt-8 grid max-w-5xl grid-cols-2 gap-3 lg:grid-cols-4">
+    {% for step in steps %}
+    <li class="card flex items-center gap-3 p-3.5{% if step.locked %} opacity-80{% endif %}">
+      <span class="grid size-9 flex-none place-items-center rounded-full {% if step.locked %}bg-bg text-muted{% else %}bg-accent text-on-accent{% endif %} font-head font-extrabold">{{ forloop.counter }}</span>
+      <span class="min-w-0">
+        <strong class="block text-sm font-semibold">{{ step.title }}</strong>
+        <small class="block text-xs text-muted">{{ step.text }}</small>
+      </span>
+    </li>
+    {% endfor %}
+  </ol>
+
+  <div class="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+    <section class="card p-5 sm:p-7" aria-labelledby="design-title">
+      <h2 id="design-title" class="sr-only">Yangi loyiha</h2>
+      <form method="post" enctype="multipart/form-data" class="grid gap-7" novalidate data-image-picker data-max-side="1600" data-quality="0.85">
+        {% csrf_token %}
+        {% if ai_ready %}<input type="hidden" name="mode" value="ai">{% endif %}
+        {% form_message state %}
+        {% if not ai_ready %}
+        <p class="alert alert-info">{% icon "info" 18 "mt-px flex-none" %}<span>AI hozircha ulanmagan — ro'yxat tezkor rejimda, siz belgilagan bo'limlar bo'yicha tuziladi.</span></p>
+        {% endif %}
+
+        {# 1. Rasm #}
+        <fieldset class="grid gap-3">
+          <legend class="mb-3 flex items-center gap-2 font-head text-lg font-bold"><span class="grid size-7 place-items-center rounded-full bg-accent-soft text-sm text-accent">1</span> Xona rasmi</legend>
+          <span class="sr-only" id="photo-label">Xona rasmi</span>
+          <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" class="sr-file sr-only" data-picker-input aria-labelledby="photo-label"{% if state.errors.photo %} aria-describedby="photo-error"{% endif %}>
+          <div class="relative overflow-hidden rounded-lg border border-line bg-bg" data-picker-preview hidden>
+            <img src="" alt="Tanlangan xona rasmi" class="mx-auto max-h-72 object-contain">
+            <button type="button" data-picker-clear class="absolute right-2 top-2 grid size-9 place-items-center rounded-full bg-gray-900/70 text-white" aria-label="Boshqa rasm tanlash">{% icon "x" 16 %}</button>
+          </div>
+          <label for="photo" class="dropzone py-8" data-picker-dropzone>
+            {% icon "image-plus" 28 "text-accent" %}
+            <span>
+              <strong class="block font-semibold">Rasm yuklash</strong>
+              <small class="block text-[12.5px] text-muted">Xona butunligicha ko'rinsin · JPG, PNG, WEBP{% if ai_ready %} · AI rasmga qarab tanlaydi{% endif %}</small>
+            </span>
+          </label>
+          <p id="photo-error" class="field-error" role="alert" data-picker-error{% if not state.errors.photo %} hidden{% endif %}>{{ state.errors.photo|default:"" }}</p>
+        </fieldset>
+
+        {# 2. Xona #}
+        <fieldset class="grid gap-3">
+          <legend class="mb-3 flex items-center gap-2 font-head text-lg font-bold"><span class="grid size-7 place-items-center rounded-full bg-accent-soft text-sm text-accent">2</span> Xona haqida</legend>
+          <div>
+            <label for="f-roomType" class="label">Xona turi</label>
+            <select id="f-roomType" name="roomType" class="select"{% if state.errors.roomType %} aria-invalid="true"{% endif %}>
+              {% if ai_ready %}
+              <option value="auto"{% if not state.values.roomType or state.values.roomType == "auto" %} selected{% endif %}>AI rasmdan o'zi aniqlasin</option>
+              {% else %}
+              <option value="" disabled{% if not state.values.roomType %} selected{% endif %}>Tanlang</option>
+              {% endif %}
+              {% for key, label in room_types.items %}<option value="{{ key }}"{% if state.values.roomType == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+            {% if state.errors.roomType %}<p class="field-error" role="alert">{{ state.errors.roomType }}</p>{% endif %}
+          </div>
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {% field state "area" "Pol, m²" inputmode="decimal" placeholder="18.5" required=True %}
+            {% field state "height" "Ship, m" value="2.7" inputmode="decimal" %}
+            {% field state "windows" "Derazalar" type="number" value="1" min=0 max=10 inputmode="numeric" %}
+            {% field state "doors" "Eshiklar" type="number" value="1" min=0 max=6 inputmode="numeric" %}
+          </div>
+        </fieldset>
+
+        {# 3. Nima kerak va byudjet #}
+        <fieldset class="grid gap-3">
+          <legend class="mb-3 flex items-center gap-2 font-head text-lg font-bold"><span class="grid size-7 place-items-center rounded-full bg-accent-soft text-sm text-accent">3</span> Nima kerak?</legend>
+          {% if ai_ready %}<p class="-mt-1 text-sm text-muted">Belgilanganlar ichidan AI xonaga mosini tanlaydi. Pol tayyor bo'lsa — "Pol" ni olib tashlang.</p>{% endif %}
+          <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {% for key, label in groups.items %}
+            <label class="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-line px-3 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-soft">
+              <input type="checkbox" name="groups" value="{{ key }}" class="size-4 accent-[var(--accent)]"{% if key in checked_groups %} checked{% endif %}>
+              {{ label }}
+            </label>
+            {% endfor %}
+          </div>
+          {% if state.errors.groups %}<p class="field-error" role="alert">{{ state.errors.groups }}</p>{% endif %}
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label for="f-budget" class="label">Byudjet</label>
+              <select id="f-budget" name="budget" class="select">
+                {% for key, label in budgets.items %}<option value="{{ key }}"{% if state.values.budget == key or not state.values.budget and key == "standard" %} selected{% endif %}>{{ label }}</option>{% endfor %}
+              </select>
+            </div>
+            {% if regions|length > 1 %}
+            <div>
+              <label for="f-region" class="label">Hudud</label>
+              <select id="f-region" name="region" class="select">
+                {% for r in regions %}<option value="{{ r.key }}"{% if state.values.region == r.key %} selected{% endif %}>{{ r.name }}</option>{% endfor %}
+              </select>
+            </div>
+            {% else %}
+            <input type="hidden" name="region" value="{{ regions.0.key }}">
+            {% endif %}
+          </div>
+        </fieldset>
+
+        {# 4. AI ga so'rov #}
+        {% if ai_ready %}
+        <fieldset class="grid gap-3">
+          <legend class="mb-3 flex items-center gap-2 font-head text-lg font-bold"><span class="grid size-7 place-items-center rounded-full bg-accent-soft text-sm text-accent">4</span> AI ga xohishingiz</legend>
+          {% textarea_field state "wishes" "Xonani qanday ko'rmoqchisiz? (ixtiyoriy)" maxlength=600 placeholder="Masalan: yotoqxona qilib ber, katta krovat, shkaf va och rangli parda kerak." %}
+        </fieldset>
+        {% endif %}
+
+        {% if current_user %}
+        <button type="submit" class="btn btn-primary btn-lg btn-block" data-pending="{% if ai_ready %}AI ga yuborilmoqda...{% else %}Hisoblanmoqda...{% endif %}">{% icon "sparkles" 16 %} {% if ai_ready %}AI bilan jihozlash{% else %}Ro'yxatni tuzish{% endif %}</button>
+        {% if ai_ready %}<p class="-mt-4 text-center text-xs text-muted">AI odatda 20–60 soniyada tayyorlaydi ({{ ai_provider }}). Sahifa o'zi yangilanadi.</p>{% endif %}
+        {% else %}
+        <a href="/royxat?next=/ai-loyiha" class="btn btn-primary btn-lg btn-block">{% icon "user-round" 16 %} Ro'yxatdan o'tib, loyiha yaratish</a>
+        {% endif %}
+      </form>
+    </section>
+
+    <aside class="grid gap-6 lg:sticky lg:top-[calc(var(--header-h)+16px)]">
+      {# 3D ko'rinish: tarif bo'lsa faol, bo'lmasa — tarifga havola #}
+      <section class="card overflow-hidden" aria-labelledby="view3d-title">
+        <div class="auth-hero relative p-5 sm:p-6">
+          <span class="auth-hero-orb -right-8 -top-10 size-36"></span>
+          <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">{% icon "box" 14 %} 3D ko'rinish</span>
+          <h2 id="view3d-title" class="mt-3 font-head text-xl font-extrabold">Ta'mirdan oldin natijani ko'ring</h2>
+          <p class="mt-1 text-sm text-white/80">Tanlangan mebel va materiallar xonangizning 3D sahnasida joylashtiriladi — aylantirib, har tomondan ko'rasiz.</p>
+        </div>
+        <div class="p-5 sm:p-6">
+          {% if has_3d %}
+          <p class="flex items-center gap-2 font-semibold text-success">{% icon "check-circle2" 18 %} «3D dizayn» tarifi faol</p>
+          <p class="mt-1 text-sm text-muted">Loyiha tayyor bo'lgach, natija sahifasida «3D ko'rinish» tugmasi ochiladi.</p>
+          {% else %}
+          <p class="text-sm text-muted">3D ko'rinish «3D dizayn» tarifida — <strong class="text-fg">{{ plan_3d.price|money }}</strong>. Ro'yxat va narxlar esa tarifsiz ham ko'rinadi.</p>
+          <a href="{% if current_user %}/narxlar?kerak=design3d{% else %}/royxat?next=/narxlar{% endif %}" class="btn btn-primary btn-block mt-4">{% icon "wand2" 16 %} 3D ni ochish</a>
+          {% endif %}
+        </div>
+      </section>
+
+      {% if history %}
+      <section class="card p-5" aria-labelledby="history-title">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 id="history-title" class="font-head text-lg font-bold">Mening loyihalarim</h2>
+          <span class="text-sm text-muted">{{ history|length }} ta</span>
+        </div>
+        <ul class="grid gap-2">
+          {% for d in history %}
+          <li>
+            <a href="/ai-loyiha/{{ d.public_id }}" class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-accent-soft">
+              <img src="{{ d.photo|photo_url }}" alt="" class="size-12 flex-none rounded-lg object-cover">
+              <span class="min-w-0 flex-1">
+                <strong class="block truncate text-sm font-semibold">{{ d.area|floatformat:"-1" }} m² · {{ d.budget|quality_label }}{% if d.mode == "ai" %} · AI{% endif %}</strong>
+                <small class="block text-xs text-muted">{{ d.created_at|uzdate }}{% if d.status == "processing" %} · tayyorlanmoqda{% elif d.status == "failed" %} · xato{% endif %}</small>
+              </span>
+              {% if d.status == "done" %}<strong class="whitespace-nowrap font-head text-sm tabular-nums">{{ d.total|money }}</strong>{% endif %}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </aside>
+  </div>
+</div>
+{% endblock %}

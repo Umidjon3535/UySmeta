@@ -1,0 +1,21 @@
+{% load static %}<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Internet yo'q · UySmeta</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#071110">
+  <link rel="icon" href="{% static 'icon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% asset 'css/app.css' %}">
+</head>
+{# Service worker keshida saqlanadi — shuning uchun foydalanuvchiga bog'liq hech narsa yo'q #}
+<body class="grid min-h-dvh place-items-center bg-bg p-6 text-fg">
+  <main class="grid max-w-sm place-items-center gap-4 text-center">
+    <img src="{% static 'pwa/icon-192.png' %}" alt="" width="72" height="72" class="rounded-2xl">
+    <h1 class="font-head text-2xl font-extrabold">Internet yo'q</h1>
+    <p class="text-muted">UySmeta internetga ulanganda ishlaydi. Aloqani tekshirib, qayta urinib ko'ring.</p>
+    <button type="button" class="btn btn-primary btn-lg" onclick="location.reload()">Qayta urinish</button>
+  </main>
+</body>
+</html>

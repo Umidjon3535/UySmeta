@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Biz haqimizda · UySmeta{% endblock %}
+{% block description %}UySmeta — ta'mirlash smetasi, tekshirilgan ustalar va qurilish do'konlari bir joyda. Aloqa: {{ contact_phone|phone }}, Telegram @{{ contact_telegram }}.{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-12">
+  <div class="max-w-3xl">
+    <p class="eyebrow">Biz haqimizda</p>
+    <h1 class="page-title mt-1">Ta'mirni oldindan hisoblang — keyin boshlang</h1>
+    <p class="mt-3 text-lg text-muted">UySmeta — ta'mir rejalashtirayotgan oilalar uchun xizmat. Xona o'lchamini kiritasiz va mahalliy bozor narxlarida material, usta haqi va muddatni bir necha daqiqada bilasiz. So'ng tekshirilgan usta va yaqin atrofdagi do'konni shu yerning o'zida topasiz.</p>
+  </div>
+
+  <ul class="mt-10 grid gap-4 sm:grid-cols-3">
+    {% for s in stats %}
+    <li class="card p-5">
+      <strong class="block font-head text-3xl font-extrabold tabular-nums text-accent">{{ s.value }}</strong>
+      <span class="text-muted">{{ s.label }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <section class="mt-14" aria-labelledby="who-title">
+    <h2 id="who-title" class="text-2xl font-extrabold">Kimlar uchun</h2>
+    <ul class="mt-5 grid gap-4 md:grid-cols-3">
+      {% for a in audiences %}
+      <li class="card flex flex-col p-6">
+        <span class="icon-box">{% icon a.icon 20 %}</span>
+        <h3 class="mt-4 text-lg font-bold">{{ a.title }}</h3>
+        <p class="mt-1.5 text-muted">{{ a.text }}</p>
+        <a href="{{ a.href }}" class="link mt-auto pt-4 font-semibold">{{ a.cta }} →</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="mt-14" aria-labelledby="how-title">
+    <h2 id="how-title" class="text-2xl font-extrabold">Qanday ishlaydi</h2>
+    <ol class="mt-5 grid gap-4 md:grid-cols-3">
+      {% for step in steps %}
+      <li class="flex gap-4">
+        <span class="grid size-10 flex-none place-items-center rounded-full bg-accent font-head text-lg font-extrabold text-on-accent">{{ forloop.counter }}</span>
+        <div class="pt-1.5"><p class="font-semibold">{{ step.title }}</p><p class="mt-1 text-muted">{{ step.text }}</p></div>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <section id="aloqa" class="card mt-14 scroll-mt-24 p-6 sm:p-8" aria-labelledby="contact-title">
+    <div class="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
+      <div>
+        <h2 id="contact-title" class="text-2xl font-extrabold">Aloqa</h2>
+        <p class="mt-1.5 text-muted">Savol, taklif yoki hamkorlik bo'yicha yozing yoki qo'ng'iroq qiling.</p>
+        <ul class="mt-4 grid gap-2 text-[17px]">
+          <li><a href="tel:{{ contact_phone }}" class="inline-flex items-center gap-2.5 font-semibold hover:text-accent">{% icon "phone" 18 "text-accent" %} {{ contact_phone|phone }}</a></li>
+          <li><a href="https://t.me/{{ contact_telegram }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2.5 font-semibold hover:text-accent">{% icon "send" 18 "text-accent" %} Telegram: @{{ contact_telegram }}</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a href="tel:{{ contact_phone }}" class="btn btn-secondary btn-lg">{% icon "phone-call" 18 %} Qo'ng'iroq qilish</a>
+        <a href="https://t.me/{{ contact_telegram }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">{% icon "send" 18 %} Telegram'da yozish</a>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

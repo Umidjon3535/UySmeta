@@ -1,0 +1,32 @@
+{# Parametrlar: master, estimate_id (ixtiyoriy) #}
+<li class="card flex flex-col p-5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-accent">
+  <div class="flex items-center gap-3">
+    <span class="avatar" aria-hidden="true">{{ master.name|initials }}</span>
+    <div class="min-w-0">
+      <h3 class="truncate text-[17px] font-bold"><a href="/ustalar/{{ master.id }}{% if estimate_id %}?smeta={{ estimate_id|urlencode }}{% endif %}" class="hover:text-accent">{{ master.name }}</a></h3>
+      <p class="text-sm text-muted">{{ master.specialty }}</p>
+    </div>
+  </div>
+  <div class="mt-3.5 flex flex-wrap gap-1.5">
+    <span class="badge badge-success text-[12.5px]">{% icon "badge-check" 14 %} Tekshirilgan</span>
+    {% with badge=master.active_plan|master_badge %}{% if badge %}<span class="badge badge-warning text-[12.5px]">{% icon "star" 14 "fill-star" %} {{ badge }}</span>{% endif %}{% endwith %}
+  </div>
+  {% with works=master.portfolio.all %}
+  {% if works %}
+  <a href="/ustalar/{{ master.id }}{% if estimate_id %}?smeta={{ estimate_id|urlencode }}{% endif %}" class="mt-3.5 grid grid-cols-3 gap-1.5" aria-label="{{ master.name }} portfoliosi: {{ works|length }} ta ish">
+    {% for w in works|slice:":3" %}
+    <span class="relative block overflow-hidden rounded-lg bg-bg">
+      <img src="{{ w.image|photo_url }}" alt="" class="aspect-square w-full object-cover" loading="lazy">
+      {% if forloop.last and works|length > 3 %}<span class="absolute inset-0 grid place-items-center bg-black/55 text-sm font-semibold text-white">+{{ works|length|add:"-2" }}</span>{% endif %}
+    </span>
+    {% endfor %}
+  </a>
+  {% endif %}
+  {% endwith %}
+  <ul class="my-4 grid gap-2 text-sm text-muted">
+    <li class="flex items-center gap-2">{% include "includes/rating.html" with value=master.rating count=master.reviews_count %}</li>
+    <li class="flex items-center gap-2">{% icon "briefcase" 16 %}<strong class="font-semibold text-fg">{{ master.jobs_done }}</strong> bajarilgan ish</li>
+    <li class="flex items-center gap-2">{% icon "map-pin" 16 %}{{ master.district }}</li>
+  </ul>
+  <a href="/ustalar/{{ master.id }}{% if estimate_id %}?smeta={{ estimate_id|urlencode }}{% endif %}#boglanish" class="btn btn-secondary btn-block mt-auto">Bog'lanish</a>
+</li>

@@ -1,0 +1,50 @@
+{% comment %}
+Ro'yxatdan o'tish formasi (ism, familiya, telefon, parol va uni takrorlash, oferta roziligi → Telegram/SMS kodi) — /royxat sahifasida va bosh sahifadagi kartada bir xil.
+p — id prefiksi. data-auth-form: JS sahifani yangilamasdan yuboradi.
+{% endcomment %}
+<form method="post" action="/royxat" class="grid gap-4" novalidate data-auth-form>
+  {% csrf_token %}
+  {# Enter bosilganda "Qayta yuborish" emas, tasdiqlash ishlasin (standart tugma — formadagi birinchisi) #}
+  {% if state.data.codeSent %}<button type="submit" name="step" value="confirm" class="sr-only" tabindex="-1" aria-hidden="true"></button>{% endif %}
+  <input type="hidden" name="_p" value="{{ p }}">
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+  {% if claim %}<input type="hidden" name="claim" value="{{ claim }}">{% endif %}
+  {% form_message state %}
+  <div class="grid grid-cols-2 gap-3">
+    {% field state "name" "Ism" autocomplete="given-name" placeholder="Ism" maxlength=30 data_name_input=True prefix=p %}
+    {% field state "surname" "Familiya" autocomplete="family-name" placeholder="Familiya" maxlength=30 data_name_input=True prefix=p %}
+  </div>
+  {% phone_field state prefix=p %}
+  {# Ikki bosqichli formada parollar qayta to'ldiriladi — kod kelgach qayta yozilmasin #}
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <label for="{{ p }}f-password" class="label">Parol</label>
+      <div class="relative">
+        <input id="{{ p }}f-password" name="password" type="password" class="input pr-11" autocomplete="new-password" maxlength="8" placeholder="Parolni kiriting" value="{{ state.values.password|default:'' }}"{% if state.errors.password %} aria-invalid="true" aria-describedby="{{ p }}f-password-error"{% endif %}>
+        {% include "includes/password_toggle.html" %}
+      </div>
+      {% if state.errors.password %}<p id="{{ p }}f-password-error" class="field-error" role="alert">{{ state.errors.password }}</p>{% endif %}
+    </div>
+    <div>
+      <label for="{{ p }}f-passwordConfirm" class="label">Parolni takrorlang</label>
+      <div class="relative">
+        <input id="{{ p }}f-passwordConfirm" name="passwordConfirm" type="password" class="input pr-11" autocomplete="new-password" maxlength="8" placeholder="Parolni takrorlang" value="{{ state.values.passwordConfirm|default:'' }}"{% if state.errors.passwordConfirm %} aria-invalid="true" aria-describedby="{{ p }}f-passwordConfirm-error"{% endif %}>
+        {% include "includes/password_toggle.html" %}
+      </div>
+      {% if state.errors.passwordConfirm %}<p id="{{ p }}f-passwordConfirm-error" class="field-error" role="alert">{{ state.errors.passwordConfirm }}</p>{% endif %}
+    </div>
+  </div>
+  <div>
+    <label class="flex items-start gap-2 text-sm">
+      <input type="checkbox" name="oferta" value="1" class="mt-0.5 size-4 flex-none accent-[var(--accent)]"{% if state.values.oferta %} checked{% endif %}{% if state.errors.oferta %} aria-invalid="true" aria-describedby="{{ p }}f-oferta-error"{% endif %}>
+      <span><a href="/oferta" class="link" target="_blank" rel="noopener">Ommaviy oferta</a> shartlarini o'qidim va qabul qilaman</span>
+    </label>
+    {% if state.errors.oferta %}<p id="{{ p }}f-oferta-error" class="field-error" role="alert">{{ state.errors.oferta }}</p>{% endif %}
+  </div>
+  {% if state.data.codeSent %}
+    {% include "auth/otp_parts.html" with part="code" %}
+    <button type="submit" name="step" value="confirm" class="btn btn-primary btn-lg btn-block" data-pending="Kuting...">Ro'yxatdan o'tishni yakunlash</button>
+  {% else %}
+    {% include "auth/otp_parts.html" with part="channels" telegram_label="Telegram orqali ro'yxatdan o'tish" %}
+  {% endif %}
+</form>

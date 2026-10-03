@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Mening smetalarim · UySmeta{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-12">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="page-title">Mening smetalarim</h1>
+      <p class="mt-1.5 text-muted">Saqlangan smetalar — ochib, chop etib yoki ustaga yuborishingiz mumkin.</p>
+    </div>
+    <a href="/#kalkulyator" class="btn btn-primary">{% icon "file-plus2" 16 %} Yangi smeta</a>
+  </div>
+
+  {% if xush %}
+  <div class="alert alert-success mb-6" role="status">
+    {% icon "party-popper" 18 "mt-px flex-none" %}
+    <div>
+      <p class="font-semibold">Xush kelibsiz, {{ current_user.name|first_word }}!</p>
+      <p class="mt-0.5 text-fg/80">Hisobingiz tayyor. Endi kalkulyatorda smeta tuzing va «Smetani saqlash» ni bosing — u shu yerda saqlanadi. Ustaga so'rov yuborsangiz, javob holatini «Profil» bo'limida kuzatasiz.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if estimates %}
+  <ul class="grid gap-3">
+    {% for e in estimates %}
+    <li>
+      <a href="/smeta/{{ e.public_id }}" class="card flex items-center gap-4 p-4 transition-colors hover:border-accent sm:p-5">
+        <div class="min-w-0 flex-1">
+          <p class="truncate font-head text-[17px] font-bold">{{ e.title|default:e.result.roomType|room_label }}</p>
+          <p class="mt-0.5 truncate text-sm text-muted">
+            {{ e.result|describe_room }} · {{ e.result.quality|quality_label }} · {{ e.created_at|uzdate }}
+            {% if e.photo %}{% icon "image-icon" 14 "ml-1.5 inline align-[-2px]" "rasm bor" %}{% endif %}
+          </p>
+        </div>
+        <strong class="whitespace-nowrap font-head text-base font-extrabold tabular-nums sm:text-lg">{{ e.total|money }}</strong>
+        {% icon "chevron-right" 20 "flex-none text-muted" %}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="card grid place-items-center gap-3 px-6 py-16 text-center">
+    {% icon "file-plus2" 36 "text-muted" %}
+    <p class="font-head text-lg font-bold">Hali saqlangan smeta yo'q</p>
+    <p class="max-w-sm text-muted">Kalkulyatorda hisoblang va "Saqlash" tugmasini bosing — smeta shu yerda paydo bo'ladi.</p>
+    <a href="/#kalkulyator" class="btn btn-primary mt-2">Smeta tuzish</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

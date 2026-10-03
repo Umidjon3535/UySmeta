@@ -1,0 +1,8 @@
+{# Status bo'yicha filtr "chip"lari #}
+<div class="mb-4 flex flex-wrap gap-2">
+  {% for c in chips %}
+  <a href="{{ c.href }}"{% if c.active %} aria-current="page"{% endif %} class="inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold transition-colors {% if c.active %}border-accent bg-accent text-on-accent{% else %}border-line bg-card text-muted hover:border-accent hover:text-accent{% endif %}">
+    {{ c.label }} <span class="opacity-80">{{ c.count }}</span>
+  </a>
+  {% endfor %}
+</div>

@@ -1,0 +1,1557 @@
+{
+ "about": "Xona turlari bo'yicha jihozlash qoidalari. item — catalog.json kaliti (yoki byudjet bo'yicha: economy/standard/premium). qty — formula; o'zgaruvchilar: floor (pol m², foydalanuvchi kiritgan), wall (devor m², eshik/derazalar chegirilgan), ceiling, perimeter, height, kitchen (oshxona mebeli uzunligi, m: xona tomonining ~80%, 2–4,2 m), windows, doors. Funksiyalar: ceil, round, max, min. when — shart (masalan floor>=12). group — foydalanuvchi belgilaydigan bo'lim.",
+ "groups": {
+  "pol": "Pol",
+  "devor": "Devorlar",
+  "ship": "Ship",
+  "elektr": "Elektr va yoritish",
+  "santexnika": "Santexnika",
+  "mebel": "Mebel",
+  "texnika": "Maishiy texnika",
+  "dekor": "Parda va dekor",
+  "eshik": "Eshiklar"
+ },
+ "rooms": {
+  "living": {
+   "label": "Mehmonxona / yashash xonasi",
+   "summary": "Mehmonxona: qulay dam olish zonasi (divan, kreslo, jurnal stoli), qarshisida TV zonasi, yorug' va issiq yoritish.",
+   "layout": "Divan eng uzun devor bo'ylab, qarshisidagi devorga TV tumbasi va televizor. Jurnal stoli divan oldida, gilam uning ostida. Kreslo divan yonida burchakda. Konditsioner deraza tepasidagi devorga, lyustra xona markaziga, nuqtali chiroqlar ship bo'ylab teng.",
+   "rules": [
+    {
+     "group": "pol",
+     "item": {
+      "economy": "laminat-32",
+      "standard": "laminat-33",
+      "premium": "laminat-premium"
+     },
+     "qty": "floor*1.1",
+     "placement": "Butun pol (10% zaxira bilan)"
+    },
+    {
+     "group": "pol",
+     "item": "ish-laminat",
+     "qty": "floor",
+     "placement": "Laminat yotqizish"
+    },
+    {
+     "group": "pol",
+     "item": "plintus",
+     "qty": "(perimeter-0.9*doors)*1.1",
+     "placement": "Devorlar bo'ylab"
+    },
+    {
+     "group": "devor",
+     "item": "gruntovka",
+     "qty": "ceil(wall*0.1/10)",
+     "placement": "Devorlarga shpaklyovkadan oldin"
+    },
+    {
+     "group": "devor",
+     "item": "shpaklyovka",
+     "qty": "ceil(wall*1.2/20)",
+     "placement": "Devorlarni tekislash"
+    },
+    {
+     "group": "devor",
+     "item": "devor-boyoq",
+     "qty": "ceil(wall*0.15*2/10)",
+     "placement": "Devorlar, 2 qatlam"
+    },
+    {
+     "group": "devor",
+     "item": "ish-boyash",
+     "qty": "wall",
+     "placement": "Shpaklyovka va bo'yash ishi"
+    },
+    {
+     "group": "ship",
+     "item": "natyajnoy",
+     "qty": "ceiling",
+     "placement": "Butun ship"
+    },
+    {
+     "group": "elektr",
+     "item": "lyustra",
+     "qty": "1",
+     "placement": "Ship markazi"
+    },
+    {
+     "group": "elektr",
+     "item": "led-spot",
+     "qty": "max(4, round(floor/3))",
+     "placement": "Ship bo'ylab teng"
+    },
+    {
+     "group": "elektr",
+     "item": "rozetka",
+     "qty": "ceil(floor/3)+2",
+     "placement": "TV zonasi, divan yoni va eshik yonida"
+    },
+    {
+     "group": "elektr",
+     "item": "ish-elektr",
+     "qty": "ceil(floor/3)+2+max(4, round(floor/3))+1",
+     "placement": "Rozetka va chiroqlar montaji"
+    },
+    {
+     "group": "mebel",
+     "item": {
+      "economy": "divan",
+      "standard": "burchak-divan",
+      "premium": "burchak-divan"
+     },
+     "qty": "1",
+     "placement": "Eng uzun devor bo'ylab"
+    },
+    {
+     "group": "mebel",
+     "item": "kreslo",
+     "qty": "1+(floor>=22)",
+     "placement": "Divan yonida, burchakda"
+    },
+    {
+     "group": "mebel",
+     "item": "jurnal-stoli",
+     "qty": "1",
+     "placement": "Divan oldida"
+    },
+    {
+     "group": "mebel",
+     "item": "tv-tumba",
+     "qty": "1",
+     "placement": "Divan qarshisidagi devorda"
+    },
+    {
+     "group": "mebel",
+     "item": "stelaj",
+     "qty": "1",
+     "when": "floor>=16",
+     "placement": "Bo'sh devor yoki burchak"
+    },
+    {
+     "group": "texnika",
+     "item": {
+      "economy": "tv-43",
+      "standard": "tv-55",
+      "premium": "tv-55"
+     },
+     "qty": "1",
+     "placement": "TV tumbasi ustida yoki devorda"
+    },
+    {
+     "group": "texnika",
+     "item": "konditsioner-12",
+     "qty": "1",
+     "when": "floor<=20",
+     "placement": "Deraza tepasidagi devor"
+    },
+    {
+     "group": "texnika",
+     "item": "konditsioner-18",
+     "qty": "1",
+     "when": "floor>20",
+     "placement": "Deraza tepasidagi devor"
+    },
+    {
+     "group": "texnika",
+     "item": "ish-konditsioner",
+     "qty": "1",
+     "placement": "Konditsioner o'rnatish"
+    },
+    {
+     "group": "dekor",
+     "item": "parda",
+     "qty": "windows",
+     "placement": "Har bir derazaga"
+    },
+    {
+     "group": "dekor",
+     "item": "gilam",
+     "qty": "1",
+     "placement": "Divan va jurnal stoli ostida"
+    },
+    {
+     "group": "eshik",
+     "item": "eshik",
+     "qty": "doors",
+     "placement": "Xona eshigi"
+    }
+   ],
+   "tips": [
+    "Divan va TV orasidagi masofa — ekran diagonalining 2–3 barobari (55\" uchun ~2,5–3,5 m).",
+    "Yorug'likni uch darajada rejalashtiring: umumiy (lyustra), zonali (nuqtali chiroqlar) va qulay (torsher).",
+    "Gilam divandan kengroq bo'lsin — xona kattaroq ko'rinadi.",
+    "Tor xonada och rangli devor va pol, katta xonada bitta to'q rangli urg'u devori yaxshi ko'rinadi."
+   ]
+  },
+  "bedroom": {
+   "label": "Yotoqxona",
+   "summary": "Yotoqxona: tinch va qulay uxlash zonasi, sig'imli kiyim shkafi, yumshoq yoritish.",
+   "layout": "Krovat bosh tomoni bilan deraza bo'lmagan devorga, ikki yonida tumbochkalar va bra. Shkaf-kupe eshik yonidagi devor bo'ylab. Komod krovat qarshisida. Konditsioner krovat ustiga emas, yon devorga.",
+   "rules": [
+    {
+     "group": "pol",
+     "item": {
+      "economy": "laminat-32",
+      "standard": "laminat-33",
+      "premium": "laminat-premium"
+     },
+     "qty": "floor*1.1",
+     "placement": "Butun pol (10% zaxira bilan)"
+    },
+    {
+     "group": "pol",
+     "item": "ish-laminat",
+     "qty": "floor",
+     "placement": "Laminat yotqizish"
+    },
+    {
+     "group": "pol",
+     "item": "plintus",
+     "qty": "(perimeter-0.9*doors)*1.1",
+     "placement": "Devorlar bo'ylab"
+    },
+    {
+     "group": "devor",
+     "item": "gruntovka",
+     "qty": "ceil(wall*0.1/10)",
+     "placement": "Devorlarga"
+    },
+    {
+     "group": "devor",
+     "item": "shpaklyovka",
+     "qty": "ceil(wall*1.2/20)",
+     "placement": "Devorlarni tekislash"
+    },
+    {
+     "group": "devor",
+     "item": "oboi",
+     "qty": "ceil(wall/5)",
+     "placement": "Barcha devorlar"
+    },
+    {
+     "group": "devor",
+     "item": "ish-oboi",
+     "qty": "wall",
+     "placement": "Oboi yopishtirish"
+    },
+    {
+     "group": "ship",
+     "item": "natyajnoy",
+     "qty": "ceiling",
+     "placement": "Butun ship"
+    },
+    {
+     "group": "elektr",
+     "item": "lyustra",
+     "qty": "1",
+     "placement": "Ship markazi"
+    },
+    {
+     "group": "elektr",
+     "item": "led-spot",
+     "qty": "max(2, round(floor/4))",
+     "placement": "Shkaf ustidagi ship"
+    },
+    {
+     "group": "elektr",
+     "item": "torsher",
+     "qty": "2",
+     "placement": "Krovat ikki yonida (bra)"
+    },
+    {
+     "group": "elektr",
+     "item": "rozetka",
+     "qty": "ceil(floor/3)+2",
+     "placement": "Tumbochkalar yonida va eshik yonida"
+    },
+    {
+     "group": "elektr",
+     "item": "ish-elektr",
+     "qty": "ceil(floor/3)+2+max(2, round(floor/4))+3",
+     "placement": "Rozetka va chiroqlar montaji"
+    },
+    {
+     "group": "mebel",
+     "item": "krovat",
+     "qty": "1",
+     "placement": "Bosh tomoni bilan deraza bo'lmagan devorga"
+    },
+    {
+     "group": "mebel",
+     "item": "matras",
+     "qty": "1",
+     "placement": "Krovat uchun"
+    },
+    {
+     "group": "mebel",
+     "item": "tumbochka",
+     "qty": "2",
+     "placement": "Krovat ikki yonida"
+    },
+    {
+     "group": "mebel",
+     "item": "shkaf-kupe",
+     "qty": "1",
+     "when": "floor>=10",
+     "placement": "Eshik yonidagi devor bo'ylab"
+    },
+    {
+     "group": "mebel",
+     "item": "komod",
+     "qty": "1",
+     "when": "floor>=13",
+     "placement": "Krovat qarshisida"
+    },
+    {
+     "group": "texnika",
+     "item": "konditsioner-12",
+     "qty": "1",
+     "when": "floor<=20",
+     "placement": "Yon devor, krovat ustida emas"
+    },
+    {
+     "group": "texnika",
+     "item": "konditsioner-18",
+     "qty": "1",
+     "when": "floor>20",
+     "placement": "Yon devor, krovat ustida emas"
+    },
+    {
+     "group": "texnika",
+     "item": "ish-konditsioner",
+     "qty": "1",
+     "placement": "Konditsioner o'rnatish"
+    },
+    {
+     "group": "dekor",
+     "item": "parda",
+     "qty": "windows",
+     "placement": "Har bir derazaga (qalin parda — yorug'likni to'sadi)"
+    },
+    {
+     "group": "dekor",
+     "item": "gilam",
+     "qty": "1",
+     "placement": "Krovat oldida"
+    },
+    {
+     "group": "eshik",
+     "item": "eshik",
+     "qty": "doors",
+     "placement": "Xona eshigi"
+    }
+   ],
+   "tips": [
+    "Krovatning ikki yonida kamida 60 sm o'tish joyi qoldiring.",
+    "Yotoqxonada iliq yorug'lik (2700–3000 K) va qalin parda uyquni yaxshilaydi.",
+    "Shkaf-kupe eshiklarini oynali qilsangiz, xona kengroq ko'rinadi.",
+    "Konditsionerni krovat ustiga emas, yon devorga o'rnating."
+   ]
+  },
+  "kitchen": {
+   "label": "Oshxona",
+   "summary": "Oshxona: to'g'ri yoki burchak oshxona mebeli, to'liq texnika, yuviladigan kafel pol va fartuk.",
+   "layout": "Oshxona mebeli eng uzun devor bo'ylab; moyka deraza yoki suv chiqish joyi yonida, gaz plita moykadan kamida 40 sm uzoqda, ustida vytyajka. Muzlatgich mebel qatorining chetida. Stol va stullar deraza yonida.",
+   "rules": [
+    {
+     "group": "pol",
+     "item": {
+      "economy": "keramogranit-60",
+      "standard": "keramogranit-60",
+      "premium": "keramogranit-120"
+     },
+     "qty": "floor*1.1",
+     "placement": "Butun pol (10% zaxira bilan)"
+    },
+    {
+     "group": "pol",
+     "item": "kafel-kley",
+     "qty": "ceil(floor*1.1*5/25)",
+     "placement": "Pol kafeli uchun"
+    },
+    {
+     "group": "pol",
+     "item": "zatirka",
+     "qty": "ceil(floor/10)",
+     "placement": "Choklar uchun"
+    },
+    {
+     "group": "pol",
+     "item": "ish-kafel",
+     "qty": "floor",
+     "placement": "Pol kafelini yotqizish"
+    },
+    {
+     "group": "devor",
+     "item": "kafel-devor",
+     "qty": "kitchen*0.6*1.1",
+     "placement": "Ish zonasi fartugi (60 sm balandlik)"
+    },
+    {
+     "group": "devor",
+     "item": "ish-kafel",
+     "qty": "kitchen*0.6",
+     "placement": "Fartuk kafeli ishi"
+    },
+    {
+     "group": "devor",
+     "item": "shpaklyovka",
+     "qty": "ceil((wall-kitchen*0.6)*1.2/20)",
+     "placement": "Qolgan devorlar"
+    },
+    {
+     "group": "devor",
+     "item": "devor-boyoq",
+     "qty": "ceil((wall-kitchen*0.6)*0.15*2/10)",
+     "placement": "Qolgan devorlar, yuviladigan bo'yoq"
+    },
+    {
+     "group": "devor",
+     "item": "ish-boyash",
+     "qty": "wall-kitchen*0.6",
+     "placement": "Shpaklyovka va bo'yash"
+    },
+    {
+     "group": "ship",
+     "item": "natyajnoy",
+     "qty": "ceiling",
+     "placement": "Butun ship"
+    },
+    {
+     "group": "elektr",
+     "item": "oshxona-led",
+     "qty": "1",
+     "placement": "Yuqori shkaflar ostida"
+    },
+    {
+     "group": "elektr",
+     "item": "led-spot",
+     "qty": "max(4, round(floor/2.5))",
+     "placement": "Ship bo'ylab"
+    },
+    {
+     "group": "elektr",
+     "item": "rozetka",
+     "qty": "ceil(floor/2)+4",
+     "placement": "Ish zonasi, texnika joylari"
+    },
+    {
+     "group": "elektr",
+     "item": "ish-elektr",
+     "qty": "ceil(floor/2)+4+max(4, round(floor/2.5))+1",
+     "placement": "Rozetka va chiroqlar montaji"
+    },
+    {
+     "group": "mebel",
+     "item": {
+      "economy": "oshxona-ldsp",
+      "standard": "oshxona-mdf",
+      "premium": "oshxona-akril"
+     },
+     "qty": "kitchen",
+     "placement": "Eng uzun devor bo'ylab"
+    },
+    {
+     "group": "mebel",
+     "item": {
+      "economy": null,
+      "standard": null,
+      "premium": "stoleshnitsa"
+     },
+     "qty": "kitchen",
+     "placement": "Pastki shkaflar ustida"
+    },
+    {
+     "group": "mebel",
+     "item": "ish-oshxona",
+     "qty": "kitchen",
+     "placement": "Mebelni yig'ish va o'rnatish"
+    },
+    {
+     "group": "mebel",
+     "item": "oshxona-stol",
+     "qty": "1",
+     "when": "floor>=8",
+     "placement": "Deraza yonida"
+    },
+    {
+     "group": "texnika",
+     "item": {
+      "economy": "muzlatgich-artel",
+      "standard": "muzlatgich-samsung",
+      "premium": "muzlatgich-samsung"
+     },
+     "qty": "1",
+     "placement": "Mebel qatorining chetida"
+    },
+    {
+     "group": "texnika",
+     "item": {
+      "economy": "gaz-plita-artel",
+      "standard": "gaz-plita-gefest",
+      "premium": "gaz-plita-gefest"
+     },
+     "qty": "1",
+     "placement": "Moykadan kamida 40 sm uzoqda"
+    },
+    {
+     "group": "texnika",
+     "item": "vytyajka",
+     "qty": "1",
+     "placement": "Gaz plita ustida"
+    },
+    {
+     "group": "texnika",
+     "item": {
+      "economy": null,
+      "standard": "mikrotolqin",
+      "premium": "mikrotolqin"
+     },
+     "qty": "1",
+     "placement": "Yuqori shkafda yoki stoleshnitsada"
+    },
+    {
+     "group": "santexnika",
+     "item": "moyka",
+     "qty": "1",
+     "placement": "Suv chiqish joyi yonida"
+    },
+    {
+     "group": "santexnika",
+     "item": "ish-smesitel",
+     "qty": "1",
+     "placement": "Moyka smesitelini ulash"
+    },
+    {
+     "group": "dekor",
+     "item": "jalyuzi",
+     "qty": "windows",
+     "placement": "Har bir derazaga (oshxonada qulay)"
+    },
+    {
+     "group": "eshik",
+     "item": "eshik",
+     "qty": "doors",
+     "placement": "Xona eshigi"
+    }
+   ],
+   "tips": [
+    "Ish uchburchagi: moyka, plita va muzlatgich orasidagi masofa 1,2–2,7 m bo'lsin.",
+    "Fartuk va pol uchun yuviladigan, dog' ko'rinmaydigan material tanlang.",
+    "Ish zonasi ustidagi LED yoritgich ovqat tayyorlashda soyani yo'qotadi.",
+    "Rozetkalarni stoleshnitsadan 15–20 sm yuqoriga, texnika ortiga alohida qator qiling."
+   ]
+  },
+  "bathroom": {
+   "label": "Vannaxona / hojatxona",
+   "summary": "Vannaxona: to'liq kafel, gidroizolyatsiya, yangi santexnika va suv isitgich.",
+   "layout": "Unitaz kanalizatsiya chiqish joyiga yaqin, vanna yoki dush kabina uzun devor bo'ylab. Rakovinali tumba va oyna eshik yonida. Polotensesushitel vanna yonida, kir yuvish mashinasi va boyler bo'sh devorga.",
+   "rules": [
+    {
+     "group": "pol",
+     "item": {
+      "economy": "keramogranit-60",
+      "standard": "keramogranit-60",
+      "premium": "keramogranit-120"
+     },
+     "qty": "floor*1.1",
+     "placement": "Butun pol"
+    },
+    {
+     "group": "pol",
+     "item": "gidroizolyatsiya",
+     "qty": "ceil((floor+perimeter*0.3)*1.5/15)",
+     "placement": "Pol va devorlarning 30 sm pastki qismi"
+    },
+    {
+     "group": "pol",
+     "item": "ish-kafel",
+     "qty": "floor",
+     "placement": "Pol kafelini yotqizish"
+    },
+    {
+     "group": "devor",
+     "item": "kafel-devor",
+     "qty": "wall*1.1",
+     "placement": "Devorlar shipgacha (10% zaxira)"
+    },
+    {
+     "group": "devor",
+     "item": "ish-kafel",
+     "qty": "wall",
+     "placement": "Devor kafelini yotqizish"
+    },
+    {
+     "group": "devor",
+     "item": "kafel-kley",
+     "qty": "ceil((floor+wall)*1.1*5/25)",
+     "placement": "Pol va devor kafeli uchun"
+    },
+    {
+     "group": "devor",
+     "item": "zatirka",
+     "qty": "ceil((floor+wall)/10)",
+     "placement": "Choklar uchun"
+    },
+    {
+     "group": "ship",
+     "item": "natyajnoy",
+     "qty": "ceiling",
+     "placement": "Namlikka chidamli ship"
+    },
+    {
+     "group": "elektr",
+     "item": "led-spot",
+     "qty": "max(2, round(floor))",
+     "placement": "Ship bo'ylab"
+    },
+    {
+     "group": "elektr",
+     "item": "rozetka",
+     "qty": "3",
+     "placement": "Namlikdan himoyalangan: kir mashina, boyler, oyna yoni"
+    },
+    {
+     "group": "elektr",
+     "item": "ish-elektr",
+     "qty": "max(2, round(floor))+3",
+     "placement": "Montaj"
+    },
+    {
+     "group": "santexnika",
+     "item": "unitaz",
+     "qty": "1",
+     "placement": "Kanalizatsiya chiqish joyiga yaqin"
+    },
+    {
+     "group": "santexnika",
+     "item": "ish-unitaz",
+     "qty": "1",
+     "placement": "Unitaz o'rnatish"
+    },
+    {
+     "group": "santexnika",
+     "item": "vanna-tumba",
+     "qty": "1",
+     "placement": "Eshik yonida"
+    },
+    {
+     "group": "santexnika",
+     "item": "rakovina",
+     "qty": "1",
+     "placement": "Rakovina smesiteli"
+    },
+    {
+     "group": "santexnika",
+     "item": "ish-rakovina",
+     "qty": "1",
+     "placement": "Rakovina o'rnatish"
+    },
+    {
+     "group": "santexnika",
+     "item": "vanna",
+     "qty": "1",
+     "when": "floor>=4",
+     "placement": "Uzun devor bo'ylab"
+    },
+    {
+     "group": "santexnika",
+     "item": "ish-vanna",
+     "qty": "1",
+     "when": "floor>=4",
+     "placement": "Vanna o'rnatish"
+    },
+    {
+     "group": "santexnika",
+     "item": "dush-kabina",
+     "qty": "1",
+     "when": "floor<4",
+     "placement": "Burchakda (joy tejaladi)"
+    },
+    {
+     "group": "santexnika",
+     "item": "ish-dush",
+     "qty": "1",
+     "when": "floor<4",
+     "placement": "Dush kabina o'rnatish"
+    },
+    {
+     "group": "santexnika",
+     "item": "dush-smesitel",
+     "qty": "1",
+     "placement": "Vanna yoki dush ustida"
+    },
+    {
+     "group": "santexnika",
+     "item": "polotensesushitel",
+     "qty": "1",
+     "placement": "Vanna yonida"
+    },
+    {
+     "group": "texnika",
+     "item": "boyler",
+     "qty": "1",
+     "placement": "Bo'sh devorda, 1,5 m balandlikda"
+    },
+    {
+     "group": "texnika",
+     "item": {
+      "economy": "kir-mashina-7",
+      "standard": "kir-mashina-7",
+      "premium": "kir-mashina-10"
+     },
+     "qty": "1",
+     "when": "floor>=3",
+     "placement": "Rakovina yoki bo'sh devor yonida"
+    },
+    {
+     "group": "dekor",
+     "item": "vanna-oyna",
+     "qty": "1",
+     "placement": "Rakovina ustida"
+    },
+    {
+     "group": "eshik",
+     "item": "eshik",
+     "qty": "doors",
+     "placement": "Vannaxona eshigi"
+    }
+   ],
+   "tips": [
+    "Gidroizolyatsiyani tejamang — qo'shnilarni suv bosish xarajati ta'mirdan qimmat.",
+    "Pol uchun sirpanmaydigan (R10 va yuqori) kafel tanlang.",
+    "Katta formatdagi kafel choklar kamligi uchun tozalashga oson.",
+    "Boyler va kir yuvish mashinasi rozetkalari namlikdan himoyalangan (IP44) bo'lsin."
+   ]
+  },
+  "children": {
+   "label": "Bolalar xonasi",
+   "summary": "Bolalar xonasi: uxlash, dars qilish va o'yin zonalari, xavfsiz va yorug'.",
+   "layout": "Krovat deraza bo'lmagan devorga, ish stoli deraza yoniga (yorug'lik chapdan tushsin). Javon va shkaf eshik yonidagi devorda, xona markazi o'yin uchun bo'sh qoladi, u yerga gilam.",
+   "rules": [
+    {
+     "group": "pol",
+     "item": {
+      "economy": "laminat-32",
+      "standard": "laminat-33",
+      "premium": "laminat-premium"
+     },
+     "qty": "floor*1.1",
+     "placement": "Butun pol"
+    },
+    {
+     "group": "pol",
+     "item": "ish-laminat",
+     "qty": "floor",
+     "placement": "Laminat yotqizish"
+    },
+    {
+     "group": "pol",
+     "item": "plintus",
+     "qty": "(perimeter-0.9*doors)*1.1",
+     "placement": "Devorlar bo'ylab"
+    },
+    {
+     "group": "devor",
+     "item": "gruntovka",
+     "qty": "ceil(wall*0.1/10)",
+     "placement": "Devorlarga"
+    },
+    {
+     "group": "devor",
+     "item": "shpaklyovka",
+     "qty": "ceil(wall*1.2/20)",
+     "placement": "Devorlarni tekislash"
+    },
+    {
+     "group": "devor",
+     "item": "devor-boyoq",
+     "qty": "ceil(wall*0.15*2/10)",
+     "placement": "Yuviladigan bo'yoq, 2 qatlam"
+    },
+    {
+     "group": "devor",
+     "item": "ish-boyash",
+     "qty": "wall",
+     "placement": "Shpaklyovka va bo'yash"
+    },
+    {
+     "group": "ship",
+     "item": "natyajnoy",
+     "qty": "ceiling",
+     "placement": "Butun ship"
+    },
+    {
+     "group": "elektr",
+     "item": "lyustra",
+     "qty": "1",
+     "placement": "Ship markazi"
+    },
+    {
+     "group": "elektr",
+     "item": "led-spot",
+     "qty": "max(2, round(floor/4))",
+     "placement": "Ish stoli ustida"
+    },
+    {
+     "group": "elektr",
+     "item": "rozetka",
+     "qty": "ceil(floor/4)+2",
+     "placement": "Ish stoli yonida (bolalar himoyali)"
+    },
+    {
+     "group": "elektr",
+     "item": "ish-elektr",
+     "qty": "ceil(floor/4)+2+max(2, round(floor/4))+1",
+     "placement": "Montaj"
+    },
+    {
+     "group": "mebel",
+     "item": "bolalar-krovati",
+     "qty": "1",
+     "placement": "Deraza bo'lmagan devorga"
+    },
+    {
+     "group": "mebel",
+     "item": "ish-stoli",
+     "qty": "1",
+     "placement": "Deraza yonida"
+    },
+    {
+     "group": "mebel",
+     "item": "ofis-kreslo",
+     "qty": "1",
+     "placement": "Ish stoli uchun"
+    },
+    {
+     "group": "mebel",
+     "item": "stelaj",
+     "qty": "1",
+     "placement": "Kitob va o'yinchoqlar uchun"
+    },
+    {
+     "group": "mebel",
+     "item": "shkaf-kupe",
+     "qty": "1",
+     "when": "floor>=10",
+     "placement": "Eshik yonidagi devor"
+    },
+    {
+     "group": "texnika",
+     "item": "konditsioner-12",
+     "qty": "1",
+     "placement": "Krovatdan uzoq devor"
+    },
+    {
+     "group": "texnika",
+     "item": "ish-konditsioner",
+     "qty": "1",
+     "placement": "Konditsioner o'rnatish"
+    },
+    {
+     "group": "dekor",
+     "item": "parda",
+     "qty": "windows",
+     "placement": "Har bir derazaga"
+    },
+    {
+     "group": "dekor",
+     "item": "gilam",
+     "qty": "1",
+     "placement": "O'yin zonasi (xona markazi)"
+    },
+    {
+     "group": "eshik",
+     "item": "eshik",
+     "qty": "doors",
+     "placement": "Xona eshigi"
+    }
+   ],
+   "tips": [
+    "Burchaklari yumaloq mebel va himoyali rozetkalar tanlang.",
+    "Ish stolini deraza yoniga qo'ying — yorug'lik chap tomondan tushsin.",
+    "Devorlar uchun yuviladigan bo'yoq tanlang.",
+    "O'yin uchun xona markazini bo'sh qoldiring."
+   ]
+  },
+  "hallway": {
+   "label": "Dahliz / koridor",
+   "summary": "Dahliz: chidamli pol, kiyim va poyabzal uchun joy, katta oyna.",
+   "layout": "Kiyim ilgich yoki shkaf kirish eshigi yonida, oyna qarshi devorda. Chiroqlar koridor bo'ylab bir tekis.",
+   "rules": [
+    {
+     "group": "pol",
+     "item": {
+      "economy": "keramogranit-60",
+      "standard": "keramogranit-60",
+      "premium": "keramogranit-120"
+     },
+     "qty": "floor*1.1",
+     "placement": "Butun pol (ko'chadan kiriladigan joy — kafel)"
+    },
+    {
+     "group": "pol",
+     "item": "kafel-kley",
+     "qty": "ceil(floor*1.1*5/25)",
+     "placement": "Pol kafeli uchun"
+    },
+    {
+     "group": "pol",
+     "item": "ish-kafel",
+     "qty": "floor",
+     "placement": "Kafel yotqizish"
+    },
+    {
+     "group": "devor",
+     "item": "shpaklyovka",
+     "qty": "ceil(wall*1.2/20)",
+     "placement": "Devorlarni tekislash"
+    },
+    {
+     "group": "devor",
+     "item": "devor-boyoq",
+     "qty": "ceil(wall*0.15*2/10)",
+     "placement": "Yuviladigan bo'yoq"
+    },
+    {
+     "group": "devor",
+     "item": "ish-boyash",
+     "qty": "wall",
+     "placement": "Shpaklyovka va bo'yash"
+    },
+    {
+     "group": "ship",
+     "item": "natyajnoy",
+     "qty": "ceiling",
+     "placement": "Butun ship"
+    },
+    {
+     "group": "elektr",
+     "item": "led-spot",
+     "qty": "max(2, round(floor/2))",
+     "placement": "Koridor bo'ylab"
+    },
+    {
+     "group": "elektr",
+     "item": "rozetka",
+     "qty": "2",
+     "placement": "Eshik yonida va oyna yonida"
+    },
+    {
+     "group": "elektr",
+     "item": "ish-elektr",
+     "qty": "max(2, round(floor/2))+2",
+     "placement": "Montaj"
+    },
+    {
+     "group": "mebel",
+     "item": "dahliz-shkaf",
+     "qty": "1",
+     "placement": "Kirish eshigi yonida"
+    },
+    {
+     "group": "mebel",
+     "item": "shkaf-kupe",
+     "qty": "1",
+     "when": "floor>=7",
+     "placement": "Uzun devor bo'ylab"
+    },
+    {
+     "group": "dekor",
+     "item": "dahliz-oyna",
+     "qty": "1",
+     "placement": "Kiyim ilgich qarshisida"
+    },
+    {
+     "group": "eshik",
+     "item": "eshik",
+     "qty": "doors",
+     "placement": "Xonalararo eshiklar"
+    }
+   ],
+   "tips": [
+    "Dahliz poli uchun kafel yoki keramogranit — ko'cha changi va namlikka chidamli.",
+    "Katta oyna tor koridorni kengroq ko'rsatadi.",
+    "Poyabzal uchun yopiq javon tartibni saqlaydi."
+   ]
+  },
+  "office": {
+   "label": "Ish xonasi",
+   "summary": "Ish xonasi: qulay ish joyi, hujjat va kitoblar uchun javonlar, yaxshi yoritish.",
+   "layout": "Ish stoli deraza yonida (yorug'lik yon tomondan), ofis kreslosi bilan. Javonlar qarama-qarshi devorda, dam olish uchun kreslo va torsher burchakda.",
+   "rules": [
+    {
+     "group": "pol",
+     "item": {
+      "economy": "laminat-32",
+      "standard": "laminat-33",
+      "premium": "laminat-premium"
+     },
+     "qty": "floor*1.1",
+     "placement": "Butun pol"
+    },
+    {
+     "group": "pol",
+     "item": "ish-laminat",
+     "qty": "floor",
+     "placement": "Laminat yotqizish"
+    },
+    {
+     "group": "pol",
+     "item": "plintus",
+     "qty": "(perimeter-0.9*doors)*1.1",
+     "placement": "Devorlar bo'ylab"
+    },
+    {
+     "group": "devor",
+     "item": "shpaklyovka",
+     "qty": "ceil(wall*1.2/20)",
+     "placement": "Devorlarni tekislash"
+    },
+    {
+     "group": "devor",
+     "item": "devor-boyoq",
+     "qty": "ceil(wall*0.15*2/10)",
+     "placement": "Devorlar, 2 qatlam"
+    },
+    {
+     "group": "devor",
+     "item": "ish-boyash",
+     "qty": "wall",
+     "placement": "Shpaklyovka va bo'yash"
+    },
+    {
+     "group": "ship",
+     "item": "natyajnoy",
+     "qty": "ceiling",
+     "placement": "Butun ship"
+    },
+    {
+     "group": "elektr",
+     "item": "lyustra",
+     "qty": "1",
+     "placement": "Ship markazi"
+    },
+    {
+     "group": "elektr",
+     "item": "led-spot",
+     "qty": "max(4, round(floor/3))",
+     "placement": "Ish stoli ustida"
+    },
+    {
+     "group": "elektr",
+     "item": "rozetka",
+     "qty": "ceil(floor/2)+2",
+     "placement": "Ish stoli ostida va yonida"
+    },
+    {
+     "group": "elektr",
+     "item": "ish-elektr",
+     "qty": "ceil(floor/2)+2+max(4, round(floor/3))+1",
+     "placement": "Montaj"
+    },
+    {
+     "group": "mebel",
+     "item": "ish-stoli",
+     "qty": "1",
+     "placement": "Deraza yonida"
+    },
+    {
+     "group": "mebel",
+     "item": "ofis-kreslo",
+     "qty": "1",
+     "placement": "Ish stoli uchun"
+    },
+    {
+     "group": "mebel",
+     "item": "stelaj",
+     "qty": "1+(floor>=12)",
+     "placement": "Qarama-qarshi devor"
+    },
+    {
+     "group": "mebel",
+     "item": "kreslo",
+     "qty": "1",
+     "when": "floor>=12",
+     "placement": "Burchakda, torsher yonida"
+    },
+    {
+     "group": "elektr",
+     "item": "torsher",
+     "qty": "1",
+     "when": "floor>=12",
+     "placement": "Kreslo yonida"
+    },
+    {
+     "group": "texnika",
+     "item": "konditsioner-12",
+     "qty": "1",
+     "when": "floor<=20",
+     "placement": "Ish stolidan uzoq devor"
+    },
+    {
+     "group": "texnika",
+     "item": "konditsioner-18",
+     "qty": "1",
+     "when": "floor>20",
+     "placement": "Ish stolidan uzoq devor"
+    },
+    {
+     "group": "texnika",
+     "item": "ish-konditsioner",
+     "qty": "1",
+     "placement": "Konditsioner o'rnatish"
+    },
+    {
+     "group": "dekor",
+     "item": "jalyuzi",
+     "qty": "windows",
+     "placement": "Har bir derazaga (ekranga nur tushmasin)"
+    },
+    {
+     "group": "eshik",
+     "item": "eshik",
+     "qty": "doors",
+     "placement": "Xona eshigi"
+    }
+   ],
+   "tips": [
+    "Monitor derazaga yon tomondan tursin — ekranda aks yo'qoladi.",
+    "Ish stoli ustida 4000 K neytral yorug'lik ko'zni kamroq charchatadi.",
+    "Rozetkalarni stol ostida va ustida alohida qator qiling."
+   ]
+  }
+ },
+ "stages": [
+  {
+   "group": "elektr",
+   "title": "Elektr montaji",
+   "text": "Kabel yo'llari, rozetka va chiroq nuqtalari — devorlarni pardozlashdan oldin.",
+   "days": "max(1, round(floor/15))"
+  },
+  {
+   "group": "santexnika",
+   "title": "Santexnika quvurlari",
+   "text": "Suv va kanalizatsiya quvurlari, gidroizolyatsiya; so'ng jihozlarni o'rnatish.",
+   "days": "max(1, round(floor/6))"
+  },
+  {
+   "group": "devor",
+   "title": "Devorlar",
+   "text": "Gruntovka, shpaklyovka yoki kafel. Shpaklyovka qurigach (2–3 kun) bo'yash yoki oboi.",
+   "days": "max(2, round(wall/12))"
+  },
+  {
+   "group": "ship",
+   "title": "Ship",
+   "text": "Natyajnoy potolok — devor ishlari tugagach, pol yotqizishdan oldin.",
+   "days": "1"
+  },
+  {
+   "group": "pol",
+   "title": "Pol",
+   "text": "Asosni tekislash, kafel yoki laminat yotqizish, plintus.",
+   "days": "max(1, round(floor/12))"
+  },
+  {
+   "group": "eshik",
+   "title": "Eshiklar",
+   "text": "Pol tayyor bo'lgach eshik ramkasi va tabaqa o'rnatiladi.",
+   "days": "1"
+  },
+  {
+   "group": "mebel",
+   "title": "Mebel",
+   "text": "Buyurtma mebel 2–4 haftada tayyorlanadi — o'lchamni devorlar tayyor bo'lgach oldiring.",
+   "days": "max(1, round(floor/10))"
+  },
+  {
+   "group": "texnika",
+   "title": "Maishiy texnika",
+   "text": "Yetkazib berish, ulash va konditsioner montaji.",
+   "days": "1"
+  },
+  {
+   "group": "dekor",
+   "title": "Parda va dekor",
+   "text": "Karniz, parda, gilam va yakuniy bezak.",
+   "days": "1"
+  }
+ ],
+ "budget_tips": {
+  "economy": "Ekonom byudjet: mebel va texnikani bosqichma-bosqich oling — avval pardozlash ishlari, keyin eng zarurlari.",
+  "standard": "O'rta byudjet: pardozlash materiallariga tejamang (qayta ta'mir qimmat), dekorni keyinroq almashtirish oson.",
+  "premium": "Premium byudjet: dizayn loyihasi bilan ishlang va buyurtma mebelni ta'mir boshida buyurtma qiling — tayyorlanishi uzoq."
+ },
+ "dims": {
+  "divan": {
+   "size": [
+    2.2,
+    0.9,
+    0.85
+   ],
+   "place": "wall",
+   "color": "#5b7fa6"
+  },
+  "burchak-divan": {
+   "size": [
+    2.6,
+    1.6,
+    0.85
+   ],
+   "place": "wall",
+   "color": "#5b7fa6"
+  },
+  "kreslo": {
+   "size": [
+    0.8,
+    0.8,
+    0.9
+   ],
+   "place": "wall",
+   "color": "#7c9cc0"
+  },
+  "jurnal-stoli": {
+   "size": [
+    1.0,
+    0.6,
+    0.45
+   ],
+   "place": "center",
+   "color": "#a0785a"
+  },
+  "tv-tumba": {
+   "size": [
+    1.6,
+    0.4,
+    0.5
+   ],
+   "place": "wall",
+   "color": "#6b5a4a"
+  },
+  "stelaj": {
+   "size": [
+    0.9,
+    0.35,
+    1.9
+   ],
+   "place": "wall",
+   "color": "#a0785a"
+  },
+  "tv-43": {
+   "size": [
+    0.97,
+    0.08,
+    0.57
+   ],
+   "place": "high",
+   "elevation": 0.9,
+   "color": "#1f2937"
+  },
+  "tv-55": {
+   "size": [
+    1.23,
+    0.08,
+    0.71
+   ],
+   "place": "high",
+   "elevation": 0.9,
+   "color": "#1f2937"
+  },
+  "konditsioner-12": {
+   "size": [
+    0.8,
+    0.22,
+    0.28
+   ],
+   "place": "high",
+   "elevation": 2.1,
+   "color": "#e5e7eb"
+  },
+  "konditsioner-18": {
+   "size": [
+    0.95,
+    0.25,
+    0.3
+   ],
+   "place": "high",
+   "elevation": 2.1,
+   "color": "#e5e7eb"
+  },
+  "krovat": {
+   "size": [
+    1.6,
+    2.1,
+    0.5
+   ],
+   "place": "wall",
+   "color": "#8b6f5a"
+  },
+  "tumbochka": {
+   "size": [
+    0.45,
+    0.4,
+    0.5
+   ],
+   "place": "wall",
+   "color": "#a0785a"
+  },
+  "shkaf-kupe": {
+   "size": [
+    2.0,
+    0.6,
+    2.4
+   ],
+   "place": "wall",
+   "color": "#c8b49a"
+  },
+  "yotoqxona-toplam": {
+   "size": [
+    1.6,
+    2.1,
+    0.6
+   ],
+   "place": "wall",
+   "color": "#8b6f5a"
+  },
+  "komod": {
+   "size": [
+    1.0,
+    0.45,
+    0.85
+   ],
+   "place": "wall",
+   "color": "#a0785a"
+  },
+  "oshxona-ldsp": {
+   "size": [
+    "kitchen",
+    0.6,
+    0.9
+   ],
+   "place": "wall",
+   "color": "#d6d3d1"
+  },
+  "oshxona-mdf": {
+   "size": [
+    "kitchen",
+    0.6,
+    0.9
+   ],
+   "place": "wall",
+   "color": "#d6d3d1"
+  },
+  "oshxona-akril": {
+   "size": [
+    "kitchen",
+    0.6,
+    0.9
+   ],
+   "place": "wall",
+   "color": "#f5f5f4"
+  },
+  "muzlatgich-artel": {
+   "size": [
+    0.6,
+    0.65,
+    1.85
+   ],
+   "place": "wall",
+   "color": "#e7e5e4"
+  },
+  "muzlatgich-samsung": {
+   "size": [
+    0.6,
+    0.65,
+    1.85
+   ],
+   "place": "wall",
+   "color": "#a8a29e"
+  },
+  "gaz-plita-artel": {
+   "size": [
+    0.5,
+    0.6,
+    0.85
+   ],
+   "place": "wall",
+   "color": "#44403c"
+  },
+  "gaz-plita-gefest": {
+   "size": [
+    0.5,
+    0.6,
+    0.85
+   ],
+   "place": "wall",
+   "color": "#44403c"
+  },
+  "vytyajka": {
+   "size": [
+    0.6,
+    0.5,
+    0.4
+   ],
+   "place": "high",
+   "elevation": 1.6,
+   "color": "#a8a29e"
+  },
+  "oshxona-stol": {
+   "size": [
+    1.2,
+    0.8,
+    0.75
+   ],
+   "place": "center",
+   "color": "#a0785a"
+  },
+  "bolalar-krovati": {
+   "size": [
+    0.9,
+    1.9,
+    0.5
+   ],
+   "place": "wall",
+   "color": "#93c5fd"
+  },
+  "ish-stoli": {
+   "size": [
+    1.2,
+    0.6,
+    0.75
+   ],
+   "place": "wall",
+   "color": "#a0785a"
+  },
+  "ofis-kreslo": {
+   "size": [
+    0.6,
+    0.6,
+    1.1
+   ],
+   "place": "center",
+   "color": "#374151"
+  },
+  "dahliz-shkaf": {
+   "size": [
+    1.0,
+    0.4,
+    1.9
+   ],
+   "place": "wall",
+   "color": "#c8b49a"
+  },
+  "dahliz-oyna": {
+   "size": [
+    0.6,
+    0.05,
+    1.5
+   ],
+   "place": "high",
+   "elevation": 0.5,
+   "color": "#bae6fd"
+  },
+  "unitaz": {
+   "size": [
+    0.4,
+    0.65,
+    0.8
+   ],
+   "place": "wall",
+   "color": "#f8fafc"
+  },
+  "vanna-tumba": {
+   "size": [
+    0.8,
+    0.45,
+    0.85
+   ],
+   "place": "wall",
+   "color": "#f1f5f9"
+  },
+  "vanna": {
+   "size": [
+    1.7,
+    0.75,
+    0.6
+   ],
+   "place": "wall",
+   "color": "#f8fafc"
+  },
+  "dush-kabina": {
+   "size": [
+    0.9,
+    0.9,
+    2.0
+   ],
+   "place": "wall",
+   "color": "#bae6fd"
+  },
+  "kir-mashina-7": {
+   "size": [
+    0.6,
+    0.55,
+    0.85
+   ],
+   "place": "wall",
+   "color": "#f1f5f9"
+  },
+  "kir-mashina-10": {
+   "size": [
+    0.6,
+    0.6,
+    0.85
+   ],
+   "place": "wall",
+   "color": "#f1f5f9"
+  },
+  "boyler": {
+   "size": [
+    0.45,
+    0.45,
+    0.8
+   ],
+   "place": "high",
+   "elevation": 1.5,
+   "color": "#f8fafc"
+  },
+  "vanna-oyna": {
+   "size": [
+    0.7,
+    0.04,
+    0.9
+   ],
+   "place": "high",
+   "elevation": 1.0,
+   "color": "#bae6fd"
+  },
+  "gilam": {
+   "size": [
+    2.0,
+    3.0,
+    0.01
+   ],
+   "place": "floor",
+   "color": "#b45309"
+  },
+  "lyustra": {
+   "size": [
+    0.6,
+    0.6,
+    0.35
+   ],
+   "place": "ceiling",
+   "color": "#fde68a"
+  },
+  "torsher": {
+   "size": [
+    0.35,
+    0.35,
+    1.6
+   ],
+   "place": "wall",
+   "color": "#fbbf24"
+  }
+ }
+}

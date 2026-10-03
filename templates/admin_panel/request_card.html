@@ -1,0 +1,23 @@
+<li class="card p-4">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div class="min-w-0 flex-1 basis-64">
+      <p class="flex flex-wrap items-center gap-2 font-semibold">
+        {{ r.name }} → <a class="link" href="/ustalar/{{ r.master_id }}">{{ r.master.name }}</a>
+        <span class="badge {% if r.status == 'new' %}badge-warning{% elif r.status == 'contacted' %}{% elif r.status == 'done' %}badge-success{% else %}badge-danger{% endif %} px-2.5 py-0.5 text-xs">{{ r.status|request_status }}</span>
+      </p>
+      <p class="mt-0.5 text-sm text-muted">
+        {{ r.created_at|uzdate }} · usta: {{ r.master.phone|phone }}
+        {% if r.estimate %} · <a class="link" href="/smeta/{{ r.estimate.public_id }}" target="_blank">smeta: {{ r.estimate.total|money }}</a>{% endif %}
+      </p>
+      {% if r.message %}<p class="mt-1.5 rounded-lg bg-bg px-3 py-2 text-sm">💬 {{ r.message }}</p>{% endif %}
+    </div>
+    {% include "admin_panel/phone_actions.html" with phone_number=r.phone %}
+  </div>
+  {% if r.status != "done" and r.status != "cancelled" %}
+  <div class="mt-3 flex flex-wrap gap-2 border-t border-line pt-3">
+    {% if r.status == "new" %}{% include "admin_panel/action_button.html" with action="request_status" id=r.id status="contacted" variant="primary" text="Bog'lanildi" %}{% endif %}
+    {% include "admin_panel/action_button.html" with action="request_status" id=r.id status="done" text="Bajarildi" %}
+    {% include "admin_panel/action_button.html" with action="request_status" id=r.id status="cancelled" variant="ghost" text="Bekor qilish" %}
+  </div>
+  {% endif %}
+</li>

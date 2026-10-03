@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Buyurtma va to'lov · UySmeta{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="container-page max-w-3xl py-8 md:py-10">
+  <a href="/profil" class="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-accent">{% icon "arrow-left" 16 %} Profilga qaytish</a>
+
+  {% if yangi and order.status == "new" %}
+  <p class="alert alert-success mb-5" role="status">{% icon "check-circle2" 18 "mt-px flex-none" %}<span>Buyurtma qabul qilindi! Endi pastdagi ko'rsatma bo'yicha to'lovni amalga oshiring.</span></p>
+  {% endif %}
+
+  <section class="card p-5 sm:p-7">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <p class="text-sm text-muted">Buyurtma #{{ order.id }} · {{ order.created_at|uzdate }}</p>
+        <h1 class="page-title mt-1">{{ plan.title }}</h1>
+        <p class="mt-1 text-muted">{{ plan.description }}</p>
+      </div>
+      <span class="badge {% if order.status == 'new' %}badge-warning{% elif order.status == 'cancelled' %}badge-danger{% else %}badge-success{% endif %}">
+        {% if order.status == "new" and order.receipt %}To'lov tekshirilmoqda{% else %}{{ order.status|order_status }}{% endif %}
+      </span>
+    </div>
+
+    <div class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-accent-soft px-5 py-4">
+      <div>
+        <p class="text-sm font-semibold text-accent">To'lov summasi</p>
+        <p class="font-head text-3xl font-extrabold tabular-nums">{{ order.amount|money }}</p>
+      </div>
+      {% if order.status == "new" %}
+      <button type="button" class="btn btn-secondary btn-sm" data-copy="{{ order.amount }}" data-copy-label="Summani nusxalash">{% icon "copy" 16 %}<span aria-live="polite">Summani nusxalash</span></button>
+      {% endif %}
+    </div>
+
+    {% if order.status == "paid" %}
+      {% include "includes/status_note.html" with icon_name="check-circle2" icon_cls="text-success" title="Balansdan to'landi — tarif faol" text="Rahmat! Tarif imkoniyatlari darhol ochildi. Quyidagi havolalar orqali foydalaning." %}
+      {% if order.plan in "usta_pro usta_top" %}
+      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+        <a href="/profil#portfolio" class="card flex items-center gap-3 p-4 hover:border-accent">{% icon "image-plus" 22 "text-accent" %}<span><strong class="block">Portfolio</strong><span class="text-sm text-muted">Endi {{ plan.photos }} tagacha ish rasmi qo'shing</span></span></a>
+        <a href="/ustalar" class="card flex items-center gap-3 p-4 hover:border-accent">{% icon "badge-check" 22 "text-accent" %}<span><strong class="block">«{{ plan.badge }}» belgisi</strong><span class="text-sm text-muted">Ustalar ro'yxatida oldinda ko'rinasiz</span></span></a>
+      </div>
+      {% else %}
+      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+        <a href="/smetalar" class="card flex items-center gap-3 p-4 hover:border-accent">{% icon "file-text" 22 "text-accent" %}<span><strong class="block">PDF smeta</strong><span class="text-sm text-muted">Har bir smeta sahifasida «PDF yuklab olish»</span></span></a>
+        <a href="/ai-loyiha" class="card flex items-center gap-3 p-4 hover:border-accent">{% icon "sparkles" 22 "text-accent" %}<span><strong class="block">Xonani jihozlash</strong><span class="text-sm text-muted">Loyiha PDF{% if order.plan == "design3d" %}, 3D ko'rinish va dizayner maslahatlari{% endif %}</span></span></a>
+      </div>
+      {% endif %}
+      {% if order.estimate %}<a href="/smeta/{{ order.estimate.public_id }}/pdf" class="btn btn-primary mt-4">{% icon "file-text" 16 %} Tanlangan smetani PDF qilib yuklab olish</a>{% endif %}
+    {% elif order.status == "done" %}
+      {% include "includes/status_note.html" with icon_name="check-circle2" icon_cls="text-success" title="Buyurtma bajarildi" text="Natija bo'yicha operatorimiz siz bilan bog'lanadi. Savollar bo'lsa — Telegram: @{{ contact_telegram }}" %}
+    {% elif order.status == "cancelled" %}
+      {% include "includes/status_note.html" with icon_name="x-circle" icon_cls="text-danger" title="Buyurtma bekor qilingan" text="Agar pul o'tkazgan bo'lsangiz, Telegram'da @{{ contact_telegram }} ga yozing — qaytarib beramiz." %}
+    {% elif cards %}
+    <div class="mt-7 grid gap-7">
+      {# 1-qadam: kartalar #}
+      <div>
+        <h2 class="flex items-center gap-2 font-head text-lg font-bold"><span class="grid size-7 flex-none place-items-center rounded-full bg-accent text-sm font-bold text-on-accent">1</span> Quyidagi kartaga {{ order.amount|money }} o'tkazing</h2>
+        <ul class="mt-3 grid gap-3 sm:grid-cols-2">
+          {% for c in cards %}
+          <li class="rounded-[14px] bg-gradient-to-br p-5 text-white {{ c.cls }}">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold tracking-wider opacity-90">{{ c.label }}</span>
+              {% icon "credit-card" 22 "opacity-80" %}
+            </div>
+            <p class="mt-5 font-mono text-[19px] font-semibold tracking-wider sm:text-xl">{{ c.number|card }}</p>
+            <p class="mt-1 text-sm uppercase opacity-90">{{ c.holder }}</p>
+            <button type="button" class="btn btn-sm mt-4 w-full bg-white/15 text-white hover:bg-white/25" data-copy="{{ c.number }}" data-copy-label="Karta raqamini nusxalash">{% icon "copy" 16 %}<span aria-live="polite">Karta raqamini nusxalash</span></button>
+          </li>
+          {% endfor %}
+        </ul>
+        <div class="mt-3 rounded-lg bg-bg p-4 text-sm">
+          <p class="font-semibold">Qanday o'tkaziladi:</p>
+          <ol class="mt-1.5 list-decimal space-y-1 pl-5 text-muted">
+            <li>Click, Payme, Uzum yoki bank ilovangizni oching.</li>
+            <li>«Kartaga o'tkazma» (P2P) bo'limiga kiring.</li>
+            <li>Yuqoridagi karta raqamini qo'ying va <strong class="text-fg">{{ order.amount|money }}</strong> kiriting.</li>
+            <li>Izoh bo'lsa, <strong class="text-fg">#{{ order.id }}</strong> deb yozing.</li>
+          </ol>
+        </div>
+      </div>
+
+      {# 2-qadam: chek #}
+      <div>
+        <h2 class="flex items-center gap-2 font-head text-lg font-bold"><span class="grid size-7 flex-none place-items-center rounded-full bg-accent text-sm font-bold text-on-accent">2</span> Chek skrinshotini yuboring</h2>
+        {% if receipt_state.ok %}
+        <div class="mt-3">{% form_message receipt_state %}</div>
+        {% elif order.receipt %}
+        <div class="mt-3 grid gap-3">
+          <p class="alert alert-info">{% icon "clock" 18 "mt-px flex-none" %}<span>Chek yuborilgan ({{ order.receipt_at|uzdate }}). Kartaga pul tushganini tekshirib, odatda bir necha soat ichida tasdiqlaymiz — Telegram'da xabar olasiz.</span></p>
+          <img src="{{ order.receipt|photo_url }}" alt="Yuborilgan chek" class="max-h-72 rounded-lg border border-line object-contain">
+          <details{% if receipt_state.message or receipt_state.errors %} open{% endif %}>
+            <summary class="link cursor-pointer text-sm">Noto'g'ri chek yubordimmi? Qayta yuklash</summary>
+            <div class="mt-3">{% include "includes/receipt_form.html" with replacing=True %}</div>
+          </details>
+        </div>
+        {% else %}
+        <div class="mt-3">{% include "includes/receipt_form.html" with replacing=False %}</div>
+        {% endif %}
+      </div>
+
+      <p class="flex items-start gap-2 text-sm text-muted">{% icon "info" 16 "mt-0.5 flex-none" %} Karta orqali to'lov UySmeta uchun bepul. Ba'zi bank ilovalari o'tkazma uchun kichik komissiya olishi mumkin.</p>
+    </div>
+    {% else %}
+      {% include "includes/status_note.html" with icon_name="phone-call" icon_cls="text-accent" title="Operator siz bilan bog'lanadi" text="Tez orada qo'ng'iroq qilib, to'lov usulini kelishib olamiz." %}
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

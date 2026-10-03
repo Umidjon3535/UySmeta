@@ -1,0 +1,13 @@
+.venv
+venv
+__pycache__
+*.pyc
+.env
+.env.*
+!.env.example
+data
+staticfiles
+.git
+taqdimot
+.claude
+README.md

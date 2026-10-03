@@ -1,0 +1,23 @@
+{% extends "auth/shell.html" %}
+
+{% block title %}Parolni tiklash · UySmeta{% endblock %}
+{% block heading %}Parolni tiklash{% endblock %}
+{% block subtitle %}Raqamingizga tasdiqlash kodi yuboramiz, so'ng yangi parol o'rnatasiz.{% endblock %}
+
+{% block form %}
+<form method="post" class="grid gap-4" novalidate>
+  {% csrf_token %}
+  {# Enter bosilganda "Qayta yuborish" emas, tasdiqlash ishlasin (standart tugma — formadagi birinchisi) #}
+  {% if state.data.codeSent %}<button type="submit" name="step" value="confirm" class="sr-only" tabindex="-1" aria-hidden="true"></button>{% endif %}
+  {% form_message state %}
+  {% phone_field state hint="Telegram'ingiz ulangan yoki SMS qabul qiladigan raqam" required=False %}
+  {% if state.data.codeSent %}
+    {% include "auth/otp_parts.html" with part="code" %}
+    {% include "auth/password_inputs.html" with label1="Yangi parol" hint1="Aynan 8 belgi" label2="Yangi parolni takrorlang" %}
+    <button type="submit" name="step" value="confirm" class="btn btn-primary btn-lg btn-block" data-pending="Kuting...">Parolni yangilash</button>
+  {% else %}
+    {% include "auth/otp_parts.html" with part="channels" %}
+  {% endif %}
+  <p class="text-center text-sm text-muted"><a href="/kirish" class="link">Kirish sahifasiga qaytish</a></p>
+</form>
+{% endblock %}

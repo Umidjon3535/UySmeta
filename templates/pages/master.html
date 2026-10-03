@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} · UySmeta{% endblock %}
+{% block og_title %}{{ page_title }}{% endblock %}
+{% block description %}{{ page_description }}{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-10">
+  <a href="/ustalar" class="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-accent">{% icon "arrow-left" 16 %} Barcha ustalar</a>
+
+  <div class="grid items-start gap-6 lg:grid-cols-[1fr_380px]">
+    <div class="grid gap-6">
+      <section class="card p-5 sm:p-7">
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="avatar avatar-lg" aria-hidden="true">{{ master.name|initials }}</span>
+          <div>
+            <h1 class="page-title">{{ master.name }}</h1>
+            <p class="text-muted">{{ master.specialty }}</p>
+          </div>
+          <div class="flex flex-wrap gap-1.5 sm:ml-auto">
+            {% with badge=master.active_plan|master_badge %}{% if badge %}<span class="badge badge-warning">{% icon "star" 14 "fill-star" %} {{ badge }}</span>{% endif %}{% endwith %}
+            <span class="badge badge-success">{% icon "badge-check" 14 %} Tekshirilgan</span>
+          </div>
+        </div>
+
+        <ul class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <li class="rounded-[14px] border border-line bg-bg p-3">
+            <span class="text-muted">{% icon "star" 18 "fill-star text-star" %}</span>
+            <strong class="mt-1.5 block truncate font-head text-lg font-extrabold">{{ master.rating|rating }}</strong>
+            <span class="text-[13px] text-muted">{{ master.reviews_count }} sharh</span>
+          </li>
+          <li class="rounded-[14px] border border-line bg-bg p-3">
+            <span class="text-muted">{% icon "briefcase" 18 %}</span>
+            <strong class="mt-1.5 block truncate font-head text-lg font-extrabold">{{ master.jobs_done }}</strong>
+            <span class="text-[13px] text-muted">bajarilgan ish</span>
+          </li>
+          <li class="rounded-[14px] border border-line bg-bg p-3">
+            <span class="text-muted">{% icon "calendar-clock" 18 %}</span>
+            <strong class="mt-1.5 block truncate font-head text-lg font-extrabold">{{ master.experience_years }} yil</strong>
+            <span class="text-[13px] text-muted">tajriba</span>
+          </li>
+          <li class="rounded-[14px] border border-line bg-bg p-3">
+            <span class="text-muted">{% icon "map-pin" 18 %}</span>
+            <strong class="mt-1.5 block truncate font-head text-lg font-extrabold">{{ master.district }}</strong>
+            <span class="text-[13px] text-muted">tuman</span>
+          </li>
+        </ul>
+
+        {% if master.bio %}
+        <h2 class="mt-7 text-lg font-bold">Usta haqida</h2>
+        <p class="mt-2 whitespace-pre-line text-muted">{{ master.bio }}</p>
+        {% endif %}
+      </section>
+
+      <section class="card p-5 sm:p-7" aria-labelledby="portfolio-title">
+        <div class="mb-5 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="portfolio-title" class="text-xl font-extrabold">Portfolio</h2>
+          {% if portfolio %}<span class="text-sm text-muted">{{ portfolio|length }} ta ish</span>{% endif %}
+        </div>
+        {% if portfolio %}
+        <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {% for w in portfolio %}
+          <li>
+            <button type="button" class="block w-full overflow-hidden rounded-[14px] border border-line bg-bg text-left transition-[border-color] hover:border-accent" data-work="{{ forloop.counter0 }}">
+              <img src="{{ w.image|photo_url }}" alt="{{ w.title|default:'Bajarilgan ish' }}" class="aspect-[4/3] w-full object-cover" loading="lazy">
+              {% if w.title %}<span class="block truncate px-3 py-2 text-sm">{{ w.title }}</span>{% endif %}
+            </button>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Usta hali ish rasmlarini qo'shmagan.</p>
+        {% endif %}
+      </section>
+
+      <section class="card p-5 sm:p-7" aria-labelledby="reviews-title">
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-2">
+          <h2 id="reviews-title" class="text-xl font-extrabold">Sharhlar</h2>
+          {% include "includes/rating.html" with value=master.rating count=master.reviews_count %}
+        </div>
+        {% if reviews %}
+        <ul class="grid gap-4">
+          {% for r in reviews %}
+          <li class="border-b border-line pb-4 last:border-0 last:pb-0">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <strong class="font-semibold">{{ r.user.name }}</strong>
+              <span class="text-sm text-muted">{{ r.created_at|uzdate }}</span>
+            </div>
+            <p class="mt-1 flex gap-0.5" aria-label="{{ r.rating }} yulduz">
+              {% for n in "12345" %}{% if forloop.counter <= r.rating %}{% icon "star" 14 "fill-star text-star" %}{% else %}{% icon "star" 14 "text-line" %}{% endif %}{% endfor %}
+            </p>
+            <p class="mt-1.5 text-[15px]">{{ r.comment }}</p>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Hali sharhlar yo'q.</p>
+        {% endif %}
+
+        <div class="mt-6 border-t border-line pt-5" id="sharh">
+          <h3 class="mb-3 font-bold">Sharh qoldirish</h3>
+          {% if not current_user %}
+          <p class="text-sm text-muted">Sharh qoldirish uchun <a class="link" href="/royxat?next=/ustalar/{{ master.id }}">ro'yxatdan o'ting</a>.</p>
+          {% elif review_state.ok %}
+          {% form_message review_state %}
+          {% elif not can_review %}
+          <p class="text-sm text-muted">Sharhni faqat shu ustaga so'rov yuborgan mijozlar qoldira oladi.</p>
+          {% else %}
+          <form method="post" action="/ustalar/{{ master.id }}#sharh" class="grid gap-4">
+            {% csrf_token %}
+            <input type="hidden" name="_action" value="review">
+            {% form_message review_state %}
+            <fieldset>
+              <legend class="label">Bahoingiz</legend>
+              <div class="flex gap-1" data-stars>
+                {% for n in "12345" %}
+                <label class="cursor-pointer rounded-md p-1 has-[:focus-visible]:outline has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-accent">
+                  <input type="radio" name="rating" value="{{ n }}" class="sr-only"{% if review_state.values.rating == n %} checked{% endif %}>
+                  {% icon "star" 28 "text-line" %}
+                  <span class="sr-only">{{ n }} yulduz</span>
+                </label>
+                {% endfor %}
+              </div>
+              {% if review_state.errors.rating %}<p class="field-error" role="alert">{{ review_state.errors.rating }}</p>{% endif %}
+            </fieldset>
+            {% textarea_field review_state "comment" "Fikringiz" maxlength=1000 placeholder="Ish sifati, muddat, narx haqida" required=True %}
+            <button type="submit" class="btn btn-secondary" data-pending="Yuborilmoqda...">Sharhni yuborish</button>
+          </form>
+          {% endif %}
+        </div>
+      </section>
+    </div>
+
+    <aside id="boglanish" class="card scroll-mt-24 p-5 sm:p-6 lg:sticky lg:top-[calc(var(--header-h)+16px)]" aria-labelledby="contact-title">
+      <h2 id="contact-title" class="text-xl font-extrabold">Bog'lanish</h2>
+      <p class="mb-5 mt-1 text-sm text-muted">So'rov qoldiring — usta sizga qo'ng'iroq qiladi. Bepul.</p>
+      {% if contact_state.ok %}
+      {% form_message contact_state %}
+      {% elif not current_user %}
+      <a href="/royxat?next={{ request.get_full_path|urlencode:'' }}" class="btn btn-primary btn-block">{% icon "user-round" 16 %} Ro'yxatdan o'tib, so'rov yuborish</a>
+      <p class="mt-3 text-center text-xs text-muted">Hisobingiz bormi? <a href="/kirish?next={{ request.get_full_path|urlencode:'' }}" class="link">Kirish</a></p>
+      {% else %}
+      <form method="post" action="/ustalar/{{ master.id }}#boglanish" class="grid gap-4" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="_action" value="contact">
+        {% if estimate_id %}<input type="hidden" name="estimate" value="{{ estimate_id }}">{% endif %}
+        {% form_message contact_state %}
+        {% field contact_state "name" "Ismingiz" value=current_user.name autocomplete="name" required=True %}
+        {% phone_field contact_state value=current_user.phone %}
+        {% with first=master.name|first_word %}
+        {% textarea_field contact_state "message" "Xabar (ixtiyoriy)" maxlength=1000 placeholder="Masalan: Yunusobodda 2 xonali kvartira, vannaxonani ta'mirlash kerak. "|add:first|add:" aka, qachon ko'rib bera olasiz?" %}
+        {% endwith %}
+        {% if estimate_id %}<p class="hint -mt-2">So'rovga saqlangan smetangiz biriktiriladi.</p>{% endif %}
+        <button type="submit" class="btn btn-primary btn-block" data-pending="Yuborilmoqda...">So'rov yuborish</button>
+        <p class="text-center text-xs text-muted">Raqamingiz faqat shu ustaga ko'rinadi.</p>
+      </form>
+      {% endif %}
+    </aside>
+  </div>
+</div>
+
+{% if portfolio %}
+{# Portfolio rasmini katta ko'rish: ← → tugmalari, Esc yoki fonni bosish — yopish #}
+<dialog class="m-auto max-h-[92vh] w-[min(960px,calc(100vw-32px))] overflow-hidden rounded-[16px] bg-card p-0 text-fg backdrop:bg-black/80" data-gallery aria-label="Portfolio">
+  <div class="relative bg-black">
+    <img src="" alt="" class="mx-auto block max-h-[78vh] w-auto object-contain" data-gallery-img>
+    <button type="button" class="absolute right-2 top-2 grid size-10 place-items-center rounded-full bg-black/60 text-white" data-gallery-close aria-label="Yopish">{% icon "x" 20 %}</button>
+    {% if portfolio|length > 1 %}
+    <button type="button" class="absolute left-2 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white" data-gallery-step="-1" aria-label="Oldingi">{% icon "arrow-left" 20 %}</button>
+    <button type="button" class="absolute right-2 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white" data-gallery-step="1" aria-label="Keyingi">{% icon "arrow-right" 20 %}</button>
+    {% endif %}
+  </div>
+  <p class="flex justify-between gap-3 px-4 py-3 text-sm"><span data-gallery-title></span><span class="text-muted" data-gallery-count></span></p>
+</dialog>
+{{ portfolio_data|json_script:"portfolio-data" }}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if portfolio %}
+<script>
+(() => {
+  const works = JSON.parse(document.getElementById("portfolio-data").textContent);
+  const dialog = document.querySelector("[data-gallery]");
+  const img = dialog.querySelector("[data-gallery-img]");
+  let current = 0;
+  const show = (i) => {
+    current = (i + works.length) % works.length;
+    img.src = works[current].src;
+    img.alt = works[current].title || "Bajarilgan ish";
+    dialog.querySelector("[data-gallery-title]").textContent = works[current].title;
+    dialog.querySelector("[data-gallery-count]").textContent = `${current + 1} / ${works.length}`;
+  };
+  document.querySelectorAll("[data-work]").forEach((b) => b.addEventListener("click", () => { show(+b.dataset.work); dialog.showModal(); }));
+  dialog.querySelectorAll("[data-gallery-step]").forEach((b) => b.addEventListener("click", () => show(current + +b.dataset.galleryStep)));
+  dialog.querySelector("[data-gallery-close]").addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
+  dialog.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") show(current - 1);
+    if (e.key === "ArrowRight") show(current + 1);
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

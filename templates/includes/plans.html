@@ -1,0 +1,44 @@
+{# Tarif kartalari. with_orders=True bo'lsa pullik tariflar ostida buyurtma formasi chiqadi (narxlar sahifasi) #}
+<div class="grid items-stretch gap-6 md:grid-cols-3 md:gap-3.5 lg:gap-5">
+  {% for plan in plans %}
+  <article class="card relative flex flex-col px-6 py-7 md:px-[18px] lg:px-6{% if plan.key == 'pdf' %} border-2 !border-accent{% endif %}">
+    {% if plan.key == "pdf" %}<span class="absolute -top-3 left-6 rounded-full bg-accent px-3 py-1 text-[12.5px] font-bold text-on-accent">Eng ommabop</span>{% endif %}
+    <h3 class="text-lg font-bold">{{ plan.title }}</h3>
+    <p class="mt-3 font-head text-[34px] font-extrabold tracking-tight">{{ plan.price|number }} <small class="text-base font-semibold text-muted">so'm</small></p>
+    <p class="mt-1 text-[15px] text-muted">{{ plan.description }}</p>
+    <ul class="mb-6 mt-5 grid gap-2.5 border-t border-line pt-5">
+      {% for feature in plan.features %}<li class="flex items-start gap-2.5 text-[15px]">{% icon "check" 16 "mt-0.5 flex-none text-success" %} {{ feature }}</li>{% endfor %}
+    </ul>
+    <div class="mt-auto">
+      {% if plan.key == "free" %}
+        <a href="/#kalkulyator" class="btn btn-secondary btn-block">Boshlash</a>
+      {% elif not with_orders %}
+        <a href="/narxlar#{{ plan.key }}" class="btn btn-block {% if plan.key == 'pdf' %}btn-primary{% else %}btn-secondary{% endif %}">Tanlash</a>
+      {% elif not current_user %}
+        <a href="/royxat?next=/narxlar" class="btn btn-block {% if plan.key == 'pdf' %}btn-primary{% else %}btn-secondary{% endif %}">Ro'yxatdan o'tib, buyurtma berish</a>
+      {% elif plan_levels|get:active_plan >= plan_levels|get:plan.key %}
+        <p class="badge badge-success w-full justify-center py-2">{% icon "check-circle2" 16 %} Tarifingiz faol</p>
+        <a href="{% if plan.key == 'design3d' %}/ai-loyiha{% else %}/smetalar{% endif %}" class="btn btn-secondary btn-block mt-2">Foydalanish</a>
+      {% else %}
+        <form method="post" action="/narxlar" class="grid gap-3" id="{{ plan.key }}">
+          {% csrf_token %}
+          <input type="hidden" name="plan" value="{{ plan.key }}">
+          {% if estimates %}
+          <div>
+            <label for="est-{{ plan.key }}" class="label-sm">Qaysi smeta uchun? (ixtiyoriy)</label>
+            <select id="est-{{ plan.key }}" name="estimate" class="select">
+              <option value="">Barcha smetalarim uchun</option>
+              {% for e in estimates %}<option value="{{ e.public_id }}">{{ e.label }}</option>{% endfor %}
+            </select>
+          </div>
+          {% endif %}
+          {% with price=plan_prices|get:plan.key %}
+          {% if price != plan.price %}<p class="text-sm text-muted">Yuqori tarifga o'tish: faqat farq to'lanadi.</p>{% endif %}
+          <button type="submit" class="btn btn-block {% if plan.key == 'pdf' %}btn-primary{% else %}btn-secondary{% endif %}" data-pending="To'lanmoqda..." data-confirm="Balansingizdan {{ price|money }} yechiladi. Davom etasizmi?">{% icon "wallet" 16 %} Balansdan to'lash · {{ price|money }}</button>
+          {% endwith %}
+        </form>
+      {% endif %}
+    </div>
+  </article>
+  {% endfor %}
+</div>

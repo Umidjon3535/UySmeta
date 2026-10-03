@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Narxlar · UySmeta{% endblock %}
+{% block description %}Bepul smeta, batafsil PDF smeta va 3D dizayn tariflari.{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-12">
+  <div class="section-head center">
+    <p class="eyebrow">Narxlar</p>
+    <h1 class="section-title">O'zingizga mos tarifni tanlang</h1>
+    <p class="section-lead">Oddiy smeta har doim bepul. Batafsilroq kerak bo'lsa — qo'shimcha xizmatlar.</p>
+  </div>
+
+  {% if needed %}
+  <p class="alert alert-info mx-auto mb-6 max-w-3xl">{% icon "info" 18 "mt-px flex-none" %}<span>Bu imkoniyat «{{ needed|plan_title }}» tarifida mavjud. Tarifni balansingizdan bir zumda faollashtirishingiz mumkin.</span></p>
+  {% endif %}
+  {% if buy_state.message %}<div class="mx-auto mb-6 max-w-3xl">{% form_message buy_state %}</div>{% endif %}
+  {% if current_user %}
+  <p class="mx-auto mb-6 flex max-w-3xl flex-wrap items-center justify-center gap-2 text-muted">{% icon "wallet" 16 %} Balansingiz: <strong class="text-fg">{{ current_user.balance|money }}</strong> · <a href="/hamyon" class="link">Hamyon</a></p>
+  {% endif %}
+  {% include "includes/plans.html" with with_orders=True %}
+
+  <p class="alert alert-info mx-auto mt-8 max-w-3xl">
+    {% icon "info" 18 "mt-px flex-none" %}
+    <span>Tarif balansdan to'lanadi va darhol faollashadi. Ro'yxatdan o'tgan har bir foydalanuvchiga 300 000 so'm bonus beriladi. «PDF smeta» — barcha smeta va loyihalarni PDF qilib yuklab olish, ish rejasi bilan. «3D dizayn» — bunga qo'shimcha xonaning 3D ko'rinishi va dizayner maslahatlari.</span>
+  </p>
+
+  <section class="mt-16" aria-labelledby="faq-title">
+    <h2 id="faq-title" class="mb-6 text-center text-2xl font-extrabold">Ko'p so'raladigan savollar</h2>
+    {% include "includes/faq.html" %}
+  </section>
+</div>
+{% endblock %}

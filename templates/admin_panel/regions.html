@@ -1,0 +1,27 @@
+{% include "admin_panel/section_title.html" with title="Hududlar" text="Qaysi viloyatlarda sayt ishlashini tanlang. Yoqishdan oldin shu hudud narxlarini sozlab qo'ying." %}
+<ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+  {% for c in region_cards %}
+  <li class="card flex flex-col p-4{% if c.on %} border-accent{% endif %}">
+    <div class="flex items-start justify-between gap-2">
+      <p class="font-semibold">{{ c.region.name }}</p>
+      <span class="badge {% if c.on %}badge-success{% else %}badge-muted{% endif %} px-2.5 py-0.5 text-xs">{% if c.on %}Yoqilgan{% else %}O'chiq{% endif %}</span>
+    </div>
+    <p class="mt-1 text-sm text-muted">
+      {{ c.stats.masters }} usta · {{ c.stats.estimates }} smeta{% if c.region.districts %} · {{ c.region.districts|length }} tuman/shahar{% else %} · tumanlar qo'lda kiritiladi{% endif %}
+    </p>
+    <div class="mt-3 flex flex-wrap gap-2">
+      {% if c.last %}
+      <span class="text-xs text-muted">Kamida bitta hudud yoqilgan bo'lishi kerak</span>
+      {% else %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="_action" value="toggle_region">
+        <input type="hidden" name="region" value="{{ c.region.key }}">
+        <button type="submit" class="btn {% if c.on %}btn-ghost{% else %}btn-primary{% endif %} btn-sm">{% if c.on %}O'chirish{% else %}Yoqish{% endif %}</button>
+      </form>
+      {% endif %}
+      <a href="/admin?tab=narxlar&amp;hudud={{ c.region.key }}" class="btn btn-secondary btn-sm">Narxlari</a>
+    </div>
+  </li>
+  {% endfor %}
+</ul>

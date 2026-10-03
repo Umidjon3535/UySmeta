@@ -1,0 +1,5 @@
+{% extends "auth/shell.html" %}
+
+{% block title %}Telegram orqali kirish · UySmeta{% endblock %}
+
+{% block form %}{% include "auth/auth_panel.html" with active="login" mode="telegram" tg_state=state %}{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} · UySmeta{% endblock %}
+{% block og_title %}{{ page_title }}{% endblock %}
+{% block description %}{{ page_description }}{% endblock %}
+
+{% block content %}
+<div class="container-page py-8 md:py-10">
+  <a href="/dokonlar" class="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-accent">{% icon "arrow-left" 16 %} Barcha do'konlar</a>
+
+  <div class="grid items-start gap-6 lg:grid-cols-[1fr_360px]">
+    <section class="card p-5 sm:p-7">
+      <div class="flex flex-wrap items-center gap-4">
+        {% if shop.logo %}<img src="{{ shop.logo|photo_url }}" alt="{{ shop.name }} logotipi" class="size-16 flex-none rounded-2xl object-cover">{% else %}<span class="icon-box size-16 flex-none">{% icon "store" 28 %}</span>{% endif %}
+        <div class="min-w-0">
+          <h1 class="page-title">{{ shop.name }}</h1>
+          <p class="text-muted">{% if shop.district %}{{ shop.district }}, {% endif %}{{ region.name }}</p>
+        </div>
+      </div>
+      <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Toifalar">
+        {% for c in shop.category_keys %}<li class="rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent">{{ categories|get:c }}</li>{% endfor %}
+      </ul>
+      {% if shop.description %}
+      <h2 class="mt-7 text-lg font-bold">Do'kon haqida</h2>
+      <p class="mt-2 whitespace-pre-line text-muted">{{ shop.description }}</p>
+      {% endif %}
+    </section>
+
+    <aside class="card p-5 sm:p-6 lg:sticky lg:top-[calc(var(--header-h)+16px)]" aria-labelledby="contact-title">
+      <h2 id="contact-title" class="text-xl font-extrabold">Aloqa</h2>
+      <ul class="mt-4 grid gap-3 text-[15px]">
+        {% if shop.address %}<li class="flex items-start gap-2.5">{% icon "map-pin" 18 "mt-0.5 flex-none text-muted" %}<span>{{ shop.address }}</span></li>{% endif %}
+        {% if shop.work_hours %}<li class="flex items-center gap-2.5">{% icon "clock" 18 "flex-none text-muted" %}{{ shop.work_hours }}</li>{% endif %}
+        {% if shop.phone %}<li class="flex items-center gap-2.5">{% icon "phone" 18 "flex-none text-muted" %}<a href="tel:{{ shop.phone }}" class="link">{{ shop.phone|phone }}</a></li>{% endif %}
+      </ul>
+      <div class="mt-5 grid gap-2">
+        {% if shop.phone %}<a href="tel:{{ shop.phone }}" class="btn btn-primary btn-block">{% icon "phone-call" 16 %} Qo'ng'iroq qilish</a>{% endif %}
+        {% if shop.telegram %}<a href="https://t.me/{{ shop.telegram }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% icon "send" 16 %} Telegram: @{{ shop.telegram }}</a>{% endif %}
+        {% if shop.map_url %}<a href="{{ shop.map_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% icon "map" 16 %} Xaritada ko'rish</a>{% endif %}
+      </div>
+      <p class="mt-4 text-xs text-muted">Narx va mavjudlikni do'kondan aniqlang. Smetangizni ko'rsatsangiz, kerakli materiallarni tezroq yig'ib berishadi.</p>
+    </aside>
+  </div>
+
+  {# Mahsulotlar: rasm, narx, mavjudligi — toifa va qidiruv bo'yicha #}
+  <section id="mahsulotlar" class="mt-10 scroll-mt-24" aria-labelledby="products-title">
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <h2 id="products-title" class="text-xl font-extrabold">Mahsulotlar va narxlar{% if products_total %} <span class="text-base font-semibold text-muted">· {{ products_total }} ta</span>{% endif %}</h2>
+      {% if products_total %}
+      <form class="flex gap-2" role="search" action="#mahsulotlar">
+        {% if product_category %}<input type="hidden" name="toifa" value="{{ product_category }}">{% endif %}
+        <input name="q" value="{{ product_q }}" class="input min-h-10 w-56 py-2" placeholder="Mahsulot qidirish" aria-label="Mahsulot qidirish">
+        <button type="submit" class="btn btn-secondary btn-sm" aria-label="Qidirish">{% icon "search" 16 %}</button>
+      </form>
+      {% endif %}
+    </div>
+    {% if product_categories|length > 1 %}
+    <nav class="mb-5 flex flex-wrap gap-2" aria-label="Mahsulot toifalari">
+      <a href="?{% if product_q %}q={{ product_q|urlencode }}{% endif %}#mahsulotlar" class="rounded-full border px-3.5 py-1.5 text-sm font-semibold {% if not product_category %}border-accent bg-accent text-on-accent{% else %}border-line text-muted hover:border-accent hover:text-fg{% endif %}">Barchasi</a>
+      {% for key, label in product_categories.items %}
+      <a href="?toifa={{ key }}{% if product_q %}&q={{ product_q|urlencode }}{% endif %}#mahsulotlar" class="rounded-full border px-3.5 py-1.5 text-sm font-semibold {% if key == product_category %}border-accent bg-accent text-on-accent{% else %}border-line text-muted hover:border-accent hover:text-fg{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </nav>
+    {% endif %}
+
+    {% if products %}
+    <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      {% for p in products %}
+      <li class="card flex flex-col overflow-hidden{% if not p.in_stock %} opacity-60{% endif %}">
+        <div class="relative aspect-square bg-white">
+          {% if p.image_url %}<img src="{{ p.image_url }}" alt="{{ p.name }}" class="h-full w-full object-contain p-2" loading="lazy">{% else %}<span class="grid h-full place-items-center text-muted">{% icon "image-icon" 32 %}</span>{% endif %}
+          {% if not p.in_stock %}<span class="badge badge-warning absolute left-2 top-2 text-[12px]">Tugagan</span>{% endif %}
+        </div>
+        <div class="flex flex-1 flex-col gap-1 p-3">
+          <h3 class="line-clamp-2 text-[14.5px] font-semibold leading-snug">{{ p.name }}</h3>
+          <p class="mt-auto pt-1 font-head text-lg font-extrabold tabular-nums">{{ p.price|money }} <span class="text-sm font-semibold text-muted">/ {{ p.unit }}</span></p>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% if page.paginator.num_pages > 1 %}
+    <nav class="mt-6 flex flex-wrap items-center justify-center gap-1.5" aria-label="Mahsulot sahifalari">
+      {% if page.has_previous %}<a href="?{% if page_query %}{{ page_query }}&{% endif %}sahifa={{ page.previous_page_number }}#mahsulotlar" class="btn btn-secondary btn-sm" rel="prev">{% icon "arrow-left" 16 %}</a>{% endif %}
+      {% for n in page_numbers %}
+        {% if n == page.paginator.ELLIPSIS %}<span class="px-1.5 text-muted" aria-hidden="true">…</span>
+        {% elif n == page.number %}<span class="btn btn-primary btn-sm min-w-10" aria-current="page">{{ n }}</span>
+        {% else %}<a href="?{% if page_query %}{{ page_query }}&{% endif %}sahifa={{ n }}#mahsulotlar" class="btn btn-ghost btn-sm min-w-10">{{ n }}</a>{% endif %}
+      {% endfor %}
+      {% if page.has_next %}<a href="?{% if page_query %}{{ page_query }}&{% endif %}sahifa={{ page.next_page_number }}#mahsulotlar" class="btn btn-secondary btn-sm" rel="next">{% icon "arrow-right" 16 %}</a>{% endif %}
+    </nav>
+    {% endif %}
+    <p class="mt-4 text-xs text-muted">Narxlar do'kon ma'lumotlari asosida. Aniq narx va mavjudlikni do'kondan so'rang.</p>
+    {% elif products_total %}
+    <div class="card px-6 py-10 text-center text-muted">Bu so'rovga mos mahsulot topilmadi. <a href="?#mahsulotlar" class="link">Hammasini ko'rish</a></div>
+    {% else %}
+    <div class="card px-6 py-10 text-center text-muted">Do'kon mahsulotlari tez orada qo'shiladi. Hozircha narxlarni telefon orqali so'rang.</div>
+    {% endif %}
+  </section>
+
+  {% if nearby %}
+  <section class="mt-10" aria-labelledby="nearby-title">
+    <h2 id="nearby-title" class="mb-4 text-xl font-extrabold">Yaqin atrofdagi boshqa do'konlar</h2>
+    <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {% for s in nearby %}
+      <li><a href="/dokonlar/{{ s.id }}" class="card flex items-center gap-3 p-4 hover:border-accent">
+        {% if s.logo %}<img src="{{ s.logo|photo_url }}" alt="" class="size-10 flex-none rounded-lg object-cover" loading="lazy">{% else %}<span class="icon-box flex-none">{% icon "store" 18 %}</span>{% endif %}
+        <span class="min-w-0"><strong class="block truncate">{{ s.name }}</strong><span class="block truncate text-sm text-muted">{{ s.district }}</span></span>
+      </a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

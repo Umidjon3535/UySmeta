@@ -1,0 +1,20 @@
+{% comment %}
+"Kirish | Ro'yxat" tablari — bosh sahifada va /kirish, /royxat, /kirish/telegram sahifalarida bir xil.
+active: "login" | "register"; mode: "password" | "telegram" (kirish usuli). Har bir forma o'z holatini oladi.
+Tablar havola: JS bo'lmasa ham tegishli sahifaga o'tadi (app.js sahifani almashtirmay ko'rsatadi).
+{% endcomment %}
+<div data-auth-tabs>
+  <div class="segmented auth-tabs grid-cols-2" role="tablist" aria-label="Kirish yoki ro'yxatdan o'tish">
+    <a href="/kirish{{ register_query }}" role="tab" id="tab-login" class="segment" data-auth-to="login" aria-controls="panel-login" aria-selected="{% if active == 'register' %}false{% else %}true{% endif %}">Kirish</a>
+    <a href="/royxat{{ register_query }}" role="tab" id="tab-register" class="segment" data-auth-to="register" aria-controls="panel-register" aria-selected="{% if active == 'register' %}true{% else %}false{% endif %}">Ro'yxat</a>
+  </div>
+
+  <div id="panel-login" role="tabpanel" aria-labelledby="tab-login" class="mt-6" data-panel="login"{% if active == "register" %} hidden{% endif %}>
+    <div data-mode="password"{% if mode == "telegram" %} hidden{% endif %}>{% include "auth/login_form.html" with state=login_state p="l-" %}</div>
+    <div data-mode="telegram"{% if mode != "telegram" %} hidden{% endif %}>{% include "auth/telegram_login_form.html" with state=tg_state p="t-" %}</div>
+  </div>
+
+  <div id="panel-register" role="tabpanel" aria-labelledby="tab-register" class="mt-6" data-panel="register"{% if active != "register" %} hidden{% endif %}>
+    {% include "auth/register_form.html" with state=register_state p="r-" %}
+  </div>
+</div>

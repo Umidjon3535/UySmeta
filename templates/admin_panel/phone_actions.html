@@ -1,0 +1,5 @@
+{# Telefon: qo'ng'iroq qilish + nusxalash #}
+<div class="flex flex-wrap items-center gap-1.5">
+  <a href="tel:{{ phone_number }}" class="btn btn-primary btn-sm">{% icon "phone" 14 %} {{ phone_number|phone }}</a>
+  <button type="button" class="btn btn-ghost btn-sm" data-copy="{{ phone_number }}" data-copy-label="Nusxa">{% icon "copy" 16 %}<span aria-live="polite">Nusxa</span></button>
+</div>

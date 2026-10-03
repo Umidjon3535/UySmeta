@@ -1,0 +1,55 @@
+{% comment %}
+Yordam chati (o'ng pastki burchak). Xabarlar /api/yordam orqali, adminga Telegram'da boradi (core/support.py).
+JS: static/js/support.js. Telefonda pastki menyu ustida turadi.
+{% endcomment %}
+<div class="no-print fixed bottom-[calc(var(--bottom-nav-h)+14px+env(safe-area-inset-bottom))] right-4 z-[70] md:bottom-6 md:right-6" data-support data-need-contact="{% if current_user %}0{% else %}1{% endif %}">
+  <form hidden>{% csrf_token %}</form>
+
+  {# Salomlashish pufagi #}
+  <div class="support-pop absolute bottom-[78px] right-0 w-[min(330px,calc(100vw-32px))] rounded-[18px] border-2 border-accent bg-card p-4 pr-9 shadow-xl" data-support-hint hidden role="status">
+    <button type="button" class="absolute right-2 top-2 grid size-7 place-items-center rounded-full text-muted hover:bg-accent-soft hover:text-fg" data-support-hint-close aria-label="Yopish">{% icon "x" 16 %}</button>
+    <button type="button" class="flex w-full gap-3 text-left" data-support-open>
+      <span class="grid size-12 flex-none place-items-center rounded-full bg-accent text-on-accent">{% icon "ruler" 22 %}</span>
+      <span>
+        <strong class="block font-head text-[16px]">Mutaxassis</strong>
+        <span class="block text-sm text-muted">Savollaringizga sun'iy intellekt emas, jonli menejerlar javob beradi. Smeta, ustalar va narxlar bo'yicha bemalol so'rang.</span>
+      </span>
+    </button>
+  </div>
+
+  {# Chat oynasi #}
+  <section class="support-pop absolute bottom-[78px] right-0 flex h-[min(540px,calc(100dvh-190px))] w-[min(370px,calc(100vw-32px))] flex-col overflow-hidden rounded-[18px] border border-line bg-card shadow-2xl" data-support-panel hidden role="dialog" aria-labelledby="support-title">
+    <header class="flex items-center gap-3 bg-accent px-4 py-3 text-on-accent">
+      <span class="grid size-10 flex-none place-items-center rounded-full bg-white/20">{% icon "ruler" 20 %}</span>
+      <div class="min-w-0 flex-1">
+        <h2 id="support-title" class="font-head font-extrabold">UySmeta yordam</h2>
+        <p class="text-xs opacity-90">Jonli menejer · odatda 15 daqiqada javob beradi</p>
+      </div>
+      <button type="button" class="grid size-9 place-items-center rounded-full hover:bg-white/20" data-support-close aria-label="Chatni yopish">{% icon "x" 18 %}</button>
+    </header>
+
+    <ol class="flex flex-1 flex-col gap-2 overflow-y-auto p-3" data-support-list aria-live="polite">
+      <li class="flex"><div class="max-w-[85%] rounded-2xl rounded-bl-md bg-bg px-3.5 py-2 text-[15px]">Assalomu alaykum! 👋 Savolingizni yozing — menejerimiz tez orada shu yerda javob beradi.</div></li>
+    </ol>
+
+    <form class="grid gap-2 border-t border-line p-3" data-support-form novalidate>
+      <div class="grid grid-cols-2 gap-2" data-support-contact hidden>
+        <input name="name" class="input min-h-10 py-2 text-sm" maxlength="60" placeholder="Ismingiz" autocomplete="name" aria-label="Ismingiz">
+        <input name="phone" class="input min-h-10 py-2 text-sm" inputmode="tel" placeholder="+998 90 123 45 67" autocomplete="tel" aria-label="Telefon raqamingiz">
+      </div>
+      <p class="hidden text-sm text-danger" data-support-error role="alert"></p>
+      <div class="flex items-end gap-2">
+        <textarea name="text" rows="1" maxlength="1000" class="textarea max-h-28 min-h-11 flex-1 resize-none py-2.5 text-[15px]" placeholder="Xabar yozing..." aria-label="Xabar"></textarea>
+        <button type="submit" class="grid size-11 flex-none place-items-center rounded-full bg-accent text-on-accent disabled:opacity-60" aria-label="Yuborish">{% icon "send" 18 %}</button>
+      </div>
+      <p class="text-center text-[11.5px] text-muted">Shoshilinch bo'lsa: <a href="tel:{{ contact_phone }}" class="link">{{ contact_phone|phone }}</a></p>
+    </form>
+  </section>
+
+  {# Suzuvchi tugma #}
+  <button type="button" class="relative grid size-[60px] place-items-center rounded-full bg-accent text-on-accent shadow-xl ring-[10px] ring-accent/20 transition-transform hover:scale-105" data-support-toggle aria-expanded="false" aria-label="Yordam chatini ochish">
+    <span data-support-icon="open">{% icon "message-square" 26 %}</span>
+    <span data-support-icon="close" hidden>{% icon "x" 26 %}</span>
+    <span class="absolute -right-1 -top-1 hidden min-w-6 place-items-center rounded-full bg-danger px-1.5 text-xs font-bold text-white" data-support-badge></span>
+  </button>
+</div>
