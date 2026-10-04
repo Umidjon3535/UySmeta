@@ -141,7 +141,7 @@ def valid_person_name(value: str) -> bool:
 
 
 # Qabul qilinadigan operator kodlari (+998 dan keyingi 2 raqam). phone_field orqali brauzerga ham uzatiladi
-PHONE_CODES = ("33", "50", "77", "88", "90", "91", "93", "94", "95", "99")
+PHONE_CODES = ("33", "50", "77", "88", "90", "91", "93", "94", "95", "97", "99")
 PHONE_CODE_ERROR = "Operator kodi noto'g'ri. Raqam " + ", ".join(PHONE_CODES) + " bilan boshlanishi kerak"
 
 

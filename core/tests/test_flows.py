@@ -95,10 +95,10 @@ class FlowTests(TestCase):
         self.assertContains(page, 'maxlength="8"')
 
     def test_register_rejects_unknown_operator_code(self):
-        form = {"name": "Dilnoza", "surname": "Karimova", "phone": "971112233", "password": "Parol-12", "passwordConfirm": "Parol-12", "oferta": "1", "channel": "dev"}
+        form = {"name": "Dilnoza", "surname": "Karimova", "phone": "961112233", "password": "Parol-12", "passwordConfirm": "Parol-12", "oferta": "1", "channel": "dev"}
         res = self.client.post("/royxat", form)
         self.assertIn("Operator kodi", res.context["state"]["errors"]["phone"])
-        self.assertContains(self.client.get("/royxat"), 'data-phone-codes="33,50,77,88,90,91,93,94,95,99"')
+        self.assertContains(self.client.get("/royxat"), 'data-phone-codes="33,50,77,88,90,91,93,94,95,97,99"')
 
     def test_oferta_page_shows_live_prices(self):
         res = self.client.get("/oferta")
