@@ -17,3 +17,5 @@ htmlcov/
 # Saytga tegishli emas: video taqdimot (katta), Claude sozlamalari
 /taqdimot/
 /.claude/
+.vercel
+.env*

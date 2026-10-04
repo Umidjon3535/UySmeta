@@ -1,0 +1,12 @@
+/.venv
+/venv
+__pycache__
+*.pyc
+/.env
+/.env.*
+/data
+/staticfiles
+/taqdimot
+/.claude
+/.agents
+/skills-lock.json
